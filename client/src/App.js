@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Header from './components/Header'
 import Main from './components/Main'
-
-const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000'
+import { API_URL } from './config'
 
 function App() {
   const [redirecting, setRedirecting] = useState(false)
@@ -12,7 +11,7 @@ function App() {
     // If the path is a short code (non-empty, not a static file)
     if (path && !path.includes('.')) {
       setRedirecting(true)
-      window.location.replace(`${apiUrl}/${path}`)
+      window.location.replace(`${API_URL}/${path}`)
     }
   }, [])
 

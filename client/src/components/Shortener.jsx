@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
 import PulseLoader from 'react-spinners/PulseLoader'
-
-const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000'
+import { API_URL } from '../config'
 
 export default function Shortener({ onUrlCreated }) {
   const [input, setInput] = useState('')
+  const [slug, setSlug] = useState('')
+  const [autoExpire, setAutoExpire] = useState(true)
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const [selectedDomain, setSelectedDomain] = useState('klip.to/')
-  const [slug, setSlug] = useState('')
+
+  // Read-only real host prefix
+  const hostPrefix = typeof window !== 'undefined' ? `${window.location.host}/` : '/'
 
   const handleInputChange = (e) => {
     setInput(e.target.value)
@@ -22,7 +24,7 @@ export default function Shortener({ onUrlCreated }) {
         setInput(text)
         if (errorMessage) setErrorMessage('')
       }
-    } catch (err) {
+    } catch {
       const el = document.getElementById('longUrlInput')
       if (el) el.focus()
     }
@@ -39,24 +41,22 @@ export default function Shortener({ onUrlCreated }) {
     setErrorMessage('')
 
     try {
-      const response = await fetch(`${apiUrl}/`, {
+      const response = await fetch(`${API_URL}/api/shorten`, {
         method: 'POST',
-        body: JSON.stringify({ url: input.trim() }),
+        body: JSON.stringify({
+          url: input.trim(),
+          slug: slug.trim() || undefined,
+          autoExpire: autoExpire,
+        }),
         headers: {
-          'Content-type': 'application/json',
+          'Content-Type': 'application/json',
         },
       })
-
-      if (response.status === 404) {
-        setErrorMessage('Unable to reach server. Please ensure backend is running.')
-        setLoading(false)
-        return
-      }
 
       const data = await response.json()
 
       if (!response.ok) {
-        setErrorMessage(data.message || 'Invalid URL or server error')
+        setErrorMessage(data.message || 'Error creating short link')
         setLoading(false)
         return
       }
@@ -64,8 +64,10 @@ export default function Shortener({ onUrlCreated }) {
       const newItem = {
         url: input.trim(),
         shortUrl: data.shortUrl,
+        shortCode: data.shortCode,
         clicks: data.clicks || 0,
-        date: new Date().toISOString(),
+        expires_at: data.expires_at,
+        created_at: data.created_at || new Date().toISOString(),
       }
 
       if (onUrlCreated) {
@@ -75,8 +77,8 @@ export default function Shortener({ onUrlCreated }) {
       setInput('')
       setSlug('')
       setLoading(false)
-    } catch (err) {
-      setErrorMessage('Server connection error. Please try again.')
+    } catch {
+      setErrorMessage('Server connection error. Please verify the backend is running.')
       setLoading(false)
     }
   }
@@ -86,9 +88,7 @@ export default function Shortener({ onUrlCreated }) {
       <form onSubmit={handleSubmit}>
         <div className="bg-white rounded-full border border-border shadow-[0_12px_40px_-10px_rgba(39,39,42,0.1)] p-2 pl-4 sm:pl-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 transition-all focus-within:ring-2 focus-within:ring-accent/30 focus-within:border-accent">
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <span className="material-symbols-outlined text-muted text-xl shrink-0">
-              link
-            </span>
+            <span className="material-symbols-outlined text-muted text-xl shrink-0">link</span>
             <input
               id="longUrlInput"
               className="w-full bg-transparent border-0 focus:ring-0 text-ink text-sm sm:text-base placeholder-muted/60 p-0 font-normal truncate outline-none"
@@ -136,8 +136,8 @@ export default function Shortener({ onUrlCreated }) {
 
         {/* Error message indicator */}
         {errorMessage && (
-          <div className="mt-2 text-center">
-            <p className="text-danger text-xs font-mono bg-danger/10 px-3 py-1 rounded-full inline-block border border-danger/20">
+          <div className="mt-3 text-center">
+            <p className="text-danger text-xs font-mono bg-danger/10 px-4 py-1.5 rounded-full inline-block border border-danger/20">
               {errorMessage}
             </p>
           </div>
@@ -145,62 +145,41 @@ export default function Shortener({ onUrlCreated }) {
 
         {/* Domain & Custom Slug Sub-bar */}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2.5 px-3">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-mono text-xs uppercase tracking-wider text-muted">
-              Root:
-            </span>
-            <div className="inline-flex rounded-full p-1 bg-white border border-border text-xs font-mono">
-              {['klip.to/', 'go.cool/', 'bio.st/'].map((domain) => (
-                <button
-                  key={domain}
-                  type="button"
-                  onClick={() => setSelectedDomain(domain)}
-                  className={`px-3 py-0.5 rounded-full transition-all cursor-pointer ${
-                    selectedDomain === domain
-                      ? 'bg-accent-tint text-accent font-medium'
-                      : 'text-muted hover:text-ink'
-                  }`}
-                >
-                  {domain}
-                </button>
-              ))}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-xs uppercase tracking-wider text-muted">Host:</span>
+            {/* Read-only real host display */}
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white border border-border text-xs font-mono text-ink shadow-xs">
+              <span className="text-accent font-medium">{hostPrefix}</span>
             </div>
 
             <div className="inline-flex items-center bg-white border border-border rounded-full px-3 py-1 gap-1 text-xs font-mono">
-              <span className="text-muted">slug:</span>
+              <span className="text-muted">custom slug:</span>
               <input
                 id="aliasInput"
                 type="text"
-                placeholder="custom"
+                placeholder="optional"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                className="bg-transparent border-0 p-0 text-ink text-xs font-mono focus:ring-0 w-20 outline-none"
+                className="bg-transparent border-0 p-0 text-ink text-xs font-mono focus:ring-0 w-24 outline-none"
               />
-              <span className="w-1.5 h-1.5 rounded-full bg-success ml-1"></span>
+              {slug.trim() && <span className="w-1.5 h-1.5 rounded-full bg-accent ml-0.5"></span>}
             </div>
           </div>
 
-          {/* Toggles / Micro Badges */}
+          {/* Honest Toggles */}
           <div className="flex items-center gap-3 text-xs text-muted font-mono">
-            <label className="flex items-center gap-1.5 cursor-pointer hover:text-ink select-none">
+            <label className="flex items-center gap-1.5 cursor-pointer hover:text-ink select-none" title="Link expires automatically after 30 days">
               <input
-                defaultChecked
                 type="checkbox"
-                className="rounded text-accent focus:ring-accent/20 border-border"
-              />
-              <span>QR Ready</span>
-            </label>
-            <label className="flex items-center gap-1.5 cursor-pointer hover:text-ink select-none">
-              <input
-                defaultChecked
-                type="checkbox"
+                checked={autoExpire}
+                onChange={(e) => setAutoExpire(e.target.checked)}
                 className="rounded text-accent focus:ring-accent/20 border-border"
               />
               <span>Auto-30d</span>
             </label>
-            <div className="hidden sm:flex items-center gap-1">
-              <span className="material-symbols-outlined text-xs text-accent">lock</span>
-              <span>Encrypted</span>
+            <div className="flex items-center gap-1 text-muted" title="QR Code is generated dynamically for every shortened link">
+              <span className="material-symbols-outlined text-xs text-accent">qr_code</span>
+              <span>QR Ready</span>
             </div>
           </div>
         </div>

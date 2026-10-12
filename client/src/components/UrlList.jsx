@@ -12,8 +12,14 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
   }
 
   const filteredList = urlList.filter((item) => {
-    if (filter === 'active') return true
-    if (filter === 'expiring') return false
+    if (filter === 'active') {
+      return !item.expires_at || new Date(item.expires_at) > new Date()
+    }
+    if (filter === 'expiring') {
+      if (!item.expires_at) return false
+      const remainingDays = (new Date(item.expires_at) - new Date()) / (1000 * 60 * 60 * 24)
+      return remainingDays > 0 && remainingDays <= 7
+    }
     return true
   })
 
@@ -80,6 +86,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
             const isCopied = copiedIndex === index
             const displayShort = item.shortUrl.replace(/^https?:\/\//, '')
             const clicks = item.clicks || 0
+            const isExpired = item.expires_at && new Date(item.expires_at) <= new Date()
 
             return (
               <div
@@ -96,12 +103,20 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
                     >
                       {displayShort}
                     </a>
-                    <span className="px-2 py-0.5 rounded-full bg-canvas text-muted text-[11px] font-mono border border-border">
-                      Short Link
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-success/10 text-success text-[11px] font-mono border border-success/20">
-                      Live
-                    </span>
+                    {isExpired ? (
+                      <span className="px-2 py-0.5 rounded-full bg-danger/10 text-danger text-[11px] font-mono border border-danger/20">
+                        Expired
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-success/10 text-success text-[11px] font-mono border border-success/20">
+                        Active
+                      </span>
+                    )}
+                    {item.expires_at && (
+                      <span className="px-2 py-0.5 rounded-full bg-canvas text-muted text-[11px] font-mono border border-border">
+                        Auto-30d
+                      </span>
+                    )}
                   </div>
 
                   <div className="text-xs text-muted font-sans truncate max-w-lg" title={item.url}>
@@ -126,11 +141,6 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
                         strokeWidth="2"
                       ></path>
                     </svg>
-                  </div>
-
-                  <div className="hidden sm:block text-right">
-                    <div className="font-mono text-xs text-ink font-medium">100% Direct</div>
-                    <div className="font-mono text-[11px] text-muted">Source</div>
                   </div>
 
                   {/* Action buttons */}
@@ -161,7 +171,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
 
                     <button
                       type="button"
-                      onClick={() => onDelete && onDelete(item.url)}
+                      onClick={() => onDelete && onDelete(item.url, item.shortCode)}
                       className="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-danger/10 hover:text-danger hover:border-danger/30 flex items-center justify-center text-muted transition-colors cursor-pointer"
                       title="Delete link"
                     >

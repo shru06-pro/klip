@@ -6,20 +6,14 @@ import BentoFeatures from './BentoFeatures'
 import UrlList from './UrlList'
 import QrModal from './QrModal'
 import Footer from './Footer'
-
-const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000'
+import { API_URL } from '../config'
 
 const getLocalStorage = () => {
   try {
     const raw = localStorage.getItem('links')
     if (!raw) return []
     const parsed = JSON.parse(raw)
-    return parsed.map((item) => {
-      const shortUrl = item.shortUrl
-        ? item.shortUrl.replace('http://localhost:5000', window.location.origin)
-        : item.shortUrl
-      return { ...item, shortUrl }
-    })
+    return Array.isArray(parsed) ? parsed : []
   } catch {
     return []
   }
@@ -37,27 +31,67 @@ export default function Main() {
     localStorage.setItem('links', JSON.stringify(links))
   }, [links])
 
+  // Refresh clicks from the database for links in the ledger
+  useEffect(() => {
+    if (!API_URL || links.length === 0) return
+
+    async function syncClicks() {
+      try {
+        const updated = await Promise.all(
+          links.map(async (item) => {
+            const code = item.shortCode || item.shortUrl?.split('/').pop()
+            if (!code) return item
+            try {
+              const res = await fetch(`${API_URL}/api/urls/${code}`)
+              if (res.ok) {
+                const data = await res.json()
+                return {
+                  ...item,
+                  clicks: data.clicks !== undefined ? data.clicks : item.clicks,
+                  expires_at: data.expires_at !== undefined ? data.expires_at : item.expires_at,
+                }
+              }
+            } catch {
+              // Ignore single fetch errors
+            }
+            return item
+          })
+        )
+        setLinks(updated)
+        if (activeItem) {
+          const matching = updated.find((u) => u.shortUrl === activeItem.shortUrl)
+          if (matching) setActiveItem(matching)
+        }
+      } catch {
+        // Ignore general sync errors
+      }
+    }
+
+    syncClicks()
+  }, []) // Runs once on mount to synchronize click counts with PostgreSQL
+
   const addLink = (newItem) => {
     setActiveItem(newItem)
-    // Filter out duplicates if present, then prepend
-    const filtered = links.filter((l) => l.url !== newItem.url)
+    const filtered = links.filter((l) => l.url !== newItem.url && l.shortUrl !== newItem.shortUrl)
     setLinks([newItem, ...filtered])
   }
 
-  const deleteLink = async (url) => {
+  const deleteLink = async (url, shortCode) => {
     try {
-      await fetch(`${apiUrl}/`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      })
+      if (API_URL) {
+        await fetch(`${API_URL}/api/urls`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, shortCode }),
+        })
+      }
     } catch (err) {
       console.error('Error deleting from server:', err)
     }
 
-    const updated = links.filter((l) => l.url !== url)
+    const updated = links.filter((l) => l.url !== url && l.shortCode !== shortCode)
     setLinks(updated)
-    if (activeItem?.url === url) {
+    if (activeItem?.url === url || activeItem?.shortCode === shortCode) {
       setActiveItem(updated.length > 0 ? updated[0] : null)
     }
   }
@@ -79,7 +113,7 @@ export default function Main() {
       {/* 2. THE SHORTEN FORM (MAIN CTA) */}
       <Shortener onUrlCreated={addLink} />
 
-      {/* 3. ACTIVE / GENERATED RESULT CARD WITH QR CODE */}
+      {/* 3. ACTIVE / GENERATED RESULT CARD WITH REAL QR CODE */}
       {activeItem && <ActiveResultCard item={activeItem} />}
 
       {/* 4. EDITORIAL BENTO / FEATURES SUITE */}
@@ -88,7 +122,7 @@ export default function Main() {
       {/* 5. RECENT KLIPS ARCHIVE TABLE / LEDGER */}
       <UrlList
         urlList={links}
-        onDelete={deleteLink}
+        onDelete={(url, shortCode) => deleteLink(url, shortCode)}
         onSelectQr={(item) => setQrModalItem(item)}
         onClearAll={hideLinks}
       />

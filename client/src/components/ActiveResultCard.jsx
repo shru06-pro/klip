@@ -62,7 +62,18 @@ export default function ActiveResultCard({ item }) {
     a.click()
   }
 
-  // Display short URL cleanly (e.g. without http://)
+  // Calculate honest remaining expiration time
+  const getTimeLeft = (expiresAt) => {
+    if (!expiresAt) return null
+    const diff = new Date(expiresAt) - new Date()
+    if (diff <= 0) return 'Expired'
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
+    return `${days}d ${hours}h left`
+  }
+
+  const timeLeft = getTimeLeft(item.expires_at)
+  const isHttps = item.shortUrl.startsWith('https://')
   const displayUrl = item.shortUrl.replace(/^https?:\/\//, '')
 
   return (
@@ -74,11 +85,8 @@ export default function ActiveResultCard({ item }) {
             <span className="px-3 py-1 rounded-full bg-accent-tint text-accent text-xs font-mono font-medium tracking-wide">
               ACTIVE KLIP
             </span>
-            <span className="text-xs text-muted font-mono">Created just now</span>
-            <span className="w-1 h-1 rounded-full bg-border"></span>
-            <span className="text-xs text-success font-mono flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
-              Synced on Edge
+            <span className="text-xs text-muted font-mono">
+              {item.created_at ? new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Created just now'}
             </span>
           </div>
 
@@ -119,20 +127,25 @@ export default function ActiveResultCard({ item }) {
             </p>
           </div>
 
-          {/* Quick Micro Badges */}
+          {/* Honest Micro Badges */}
           <div className="flex items-center gap-3 pt-1 flex-wrap">
             <div className="bg-canvas px-3 py-1 rounded-full text-xs font-mono text-muted border border-border/80 flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm text-accent">mouse</span>
               <span>{item.clicks || 0} clicks</span>
             </div>
+
             <div className="bg-canvas px-3 py-1 rounded-full text-xs font-mono text-muted border border-border/80 flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm text-muted">timer</span>
-              <span>29d 23h left</span>
+              <span>{timeLeft ? timeLeft : 'Permanent link'}</span>
             </div>
-            <div className="bg-canvas px-3 py-1 rounded-full text-xs font-mono text-muted border border-border/80 hidden sm:flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-sm text-success">verified</span>
-              <span>SSL Protected</span>
-            </div>
+
+            {/* Show SSL Protected ONLY when BASE_URL is https */}
+            {isHttps && (
+              <div className="bg-canvas px-3 py-1 rounded-full text-xs font-mono text-muted border border-border/80 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-sm text-success">verified</span>
+                <span>SSL Protected</span>
+              </div>
+            )}
           </div>
         </div>
 
