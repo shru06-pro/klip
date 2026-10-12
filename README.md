@@ -1,42 +1,72 @@
+# klipIT - Fullstack URL Shortener
 
-# URL Shortener
+A modern fullstack URL shortener web application built with **React.js**, **Node.js**, **Express**, and **MongoDB**.
 
-This is a fullstack url shortening project build with reactjs and nodejs
+## Features
 
-## Description
-URL Shortener is a web application that allows users to create short and easy-to-share URLs from long and complex ones. It is built with React.js for the frontend and Node.js for the backend. It also uses MongoDB as a database service to store the URL mappings. This ui is a solution for a [Frontend Mentor challenge](https://www.frontendmentor.io/challenges). Frontend Mentor challenges help you improve your coding skills by building realistic projects. 
+- **Instant URL Shortening**: Generates unique short IDs for long links using NanoID.
+- **Smart Link Deduplication**: Reuses existing short links for identical destination URLs.
+- **Seamless Redirection**: Automatically redirects visitors from short links (`http://localhost:3000/:id` and `http://localhost:5000/:id`) directly to target destinations.
+- **Zero-Setup Database Fallback**: Embedded in-memory MongoDB (`mongodb-memory-server`) boots automatically if no local/remote MongoDB instance is running.
+- **Persistent History**: Keeps track of your shortened links across browser sessions using `localStorage`.
+- **One-Click Copy & Feedback**: Copy short links to your clipboard with immediate visual confirmation ("Copied!").
+- **Responsive Design**: Clean UI powered by TailwindCSS and modern responsive layouts.
 
-## Overview
+## Tech Stack
 
-### Features 
-Users should be able to:
+- **Frontend**: React 18, TailwindCSS, React Icons, React Spinners
+- **Backend**: Node.js, Express, Mongoose, NanoID, MongoDB Memory Server
+- **Tooling**: Concurrently, PowerShell & Batch launchers
 
-- View the optimal layout for the site depending on their device's screen size
-- Shorten any valid URL
-- See a list of their shortened links, even after refreshing the browser
-- Copy the shortened link to their clipboard in a single click
-- Receive an error message when the `input` is invalid
+## Getting Started
 
-### Screenshot
+### Prerequisites
 
-![url-shortener](https://github.com/Plasticfoods/URL-Shortener/assets/109089484/42dc9e47-39c4-4636-8071-808f3e4a8833)
+- [Node.js](https://nodejs.org/) (v18+)
+- [npm](https://www.npmjs.com/)
 
-### Links
-* [Live URL](https://render-little-url.netlify.app/)
-* [Solution](https://github.com/Plasticfoods/URL-Shortener)
+### Installation
 
-## My process
+Clone the repository and install all dependencies:
 
-### Built with
+```bash
+git clone https://github.com/shru06-pro/klipIT.git
+cd klipIT
+npm run install:all
+```
 
-- Semantic HTML5 markup
-- CSS custom properties
-- Flexbox
-- CSS Grid
-- [tailwindcss](https://tailwindcss.com/) - CSS framework
-- [React](https://reactjs.org/) - JS library
-- [Express](https://expressjs.com/) - Nodejs framework
-- [MongoDB](https://www.mongodb.com/) - NoSQL databases
- 
-## Contributing
-If you want to contribute to this project, you can report issues, suggest new features, or submit pull requests on GitHub. Please follow the code of conduct and the contribution guidelines before making any changes.
+### Running Locally
+
+Run both frontend and backend concurrently with a single command:
+
+```bash
+# Option 1: npm
+npm run dev
+
+# Option 2: Windows PowerShell
+.\run.ps1
+
+# Option 3: Windows Batch
+run.bat
+```
+
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Backend API**: [http://localhost:5000](http://localhost:5000)
+
+### Environment Configuration
+
+Environment templates are provided in `.env.example`, `server/.env.example`, and `client/.env.example`:
+
+```env
+# Server (.env)
+PORT=5000
+DATABASE_URL=mongodb://127.0.0.1:27017/url-shortener
+BASE_URL=http://localhost:3000
+
+# Client (.env)
+REACT_APP_API_URL=http://localhost:5000
+```
+
+## License
+
+ISC License
