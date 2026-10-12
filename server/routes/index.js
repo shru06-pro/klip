@@ -1,21 +1,38 @@
-const dotenv = require('dotenv')
-dotenv.config({ path: '../.env' })
 const express = require('express')
 const router = express.Router()
-const urlController = require('../controllers/url') 
+const rateLimit = require('express-rate-limit')
+const urlController = require('../controllers/url')
 
+// Rate limiting for the creation endpoint: 60 requests per 15 minutes per IP
+const createLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many link creation requests from this IP. Please try again after 15 minutes.' },
+})
 
-// create short url
-router.post('/', urlController.createShortUrl)
+// Health endpoint
+router.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  })
+})
 
-// find and redirect to original url
-router.get('/:shortUrlId', urlController.redirectToOriginalUrl)
+// API routes
+router.post('/api/shorten', createLimiter, urlController.createShortUrl)
+router.post('/api/urls', createLimiter, urlController.createShortUrl)
+router.delete('/api/urls', urlController.deleteUrl)
+router.get('/api/urls/:code', urlController.getUrlStats)
 
-// delete single url
+// Backward-compatible root API endpoints
+router.post('/', createLimiter, urlController.createShortUrl)
 router.delete('/', urlController.deleteUrl)
 
-router.get('/', (req, res) => {
-    res.json({message: 'Success'})
-})
+// Short link redirection: GET /:code
+// Handled after specific endpoints to avoid route collisions
+router.get('/:code', urlController.redirectToOriginalUrl)
 
 module.exports = router
