@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from './components/Header'
-import Hero from './components/Hero'
 import Main from './components/Main'
 
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000'
@@ -10,7 +9,7 @@ function App() {
 
   useEffect(() => {
     const path = window.location.pathname.replace(/^\/+/, '')
-    // If the path contains a short URL code (non-empty, not static asset)
+    // If the path is a short code (non-empty, not a static file)
     if (path && !path.includes('.')) {
       setRedirecting(true)
       window.location.replace(`${apiUrl}/${path}`)
@@ -19,20 +18,24 @@ function App() {
 
   if (redirecting) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-3 text-center p-4">
-        <h2 className="text-2xl font-bold text-gray-800">Redirecting...</h2>
-        <p className="text-gray-500">Forwarding you to your destination URL.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 text-center p-6 bg-canvas text-ink">
+        <div className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center font-serif text-2xl font-bold animate-pulse">
+          K
+        </div>
+        <div className="space-y-1">
+          <h2 className="font-serif text-3xl text-ink">Redirecting...</h2>
+          <p className="font-mono text-xs text-muted">Forwarding you to your destination link.</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-canvas text-ink font-sans antialiased selection:bg-accent-tint selection:text-accent">
       <Header />
-      <Hero />
       <Main />
-    </>
-  );
+    </div>
+  )
 }
 
-export default App;
+export default App
