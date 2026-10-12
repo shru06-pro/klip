@@ -4,7 +4,7 @@ const generateUniqueId = require('../utils/generateUniqueId')
 
 async function createShortUrl(req, res) {
     const { url } = req.body
-    const clientUrl = process.env.BASE_URL
+    const clientUrl = process.env.BASE_URL || req.headers.origin || 'http://localhost:3000'
 
     // checking if the url is valid or not
     if(!validateUrl(url)) {
@@ -56,7 +56,7 @@ async function redirectToOriginalUrl(req, res) {
         // $inc increase the clicks by 1
         await Url.findByIdAndUpdate(urlDoc._id, { $inc: { "clicks" : 1 } })
         // redirect to the original url
-        return res.status(200).redirect(urlDoc.url)
+        return res.redirect(urlDoc.url)
     }
     catch(err) {
         console.log(err)

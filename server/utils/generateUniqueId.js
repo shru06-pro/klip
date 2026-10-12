@@ -4,7 +4,7 @@ const Url = require('../models/Url')
 module.exports = async () => {
     let urlId = nanoid(6)
     while(true) {
-        const urlObject = await Url.findOne({urlId})
+        const urlObject = await Url.findOne({ shortUrlId: urlId })
         if(!urlObject) break;
         urlId = nanoid(6)
     }
