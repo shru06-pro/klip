@@ -1,7 +1,10 @@
 {
   "name": "url-shortener",
   "version": "1.0.0",
-  "description": "Fullstack URL Shortener built with React and Node.js",
+  "description": "Fullstack URL Shortener built with React and PostgreSQL",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "concurrently -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm run server\" \"npm run client\"",
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm run server:dev\" \"npm run client\"",

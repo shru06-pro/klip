@@ -5,6 +5,10 @@
 client/.env
 server/.env
 
+# Database data directories
+.data/
+server/.data/
+
 # Dependencies
 node_modules/
 client/node_modules/
