@@ -6,8 +6,8 @@ A production-ready, honest URL shortener application built with **React**, **Exp
 
 ## Tech Stack & Architecture
 
-- **Frontend (`/client`)**: React 18, TailwindCSS, QRCode, React Icons, React Spinners.
-- **Backend (`/server`)**: Node.js, Express, PostgreSQL (`pg` + `@electric-sql/pglite` embedded fallback), Helmet, Express Rate Limit, NanoID.
+- **Frontend (`/frontend`)**: React 18, TailwindCSS, QRCode, React Icons, React Spinners.
+- **Backend (`/backend`)**: Node.js, Express, PostgreSQL (`pg` + `@electric-sql/pglite` embedded fallback), Helmet, Express Rate Limit, NanoID.
 - **Database**: PostgreSQL (compatible with Neon, Supabase, Railway, Render, or local PostgreSQL).
 - **Tooling**: Concurrently, npm scripts, PowerShell & Windows Batch launchers.
 
@@ -22,7 +22,7 @@ A production-ready, honest URL shortener application built with **React**, **Exp
 
 ### Installation
 
-Clone the repository and install all dependencies for root, client, and server:
+Clone the repository and install all dependencies for root, frontend, and backend:
 
 ```bash
 git clone https://github.com/shru06-pro/klipIT.git
@@ -33,7 +33,7 @@ npm run install:all
 ### Running Locally
 
 ```bash
-# Run both client and server concurrently:
+# Run both frontend and backend concurrently:
 npm run dev
 
 # Or using the Windows launch scripts:
@@ -50,9 +50,9 @@ run.bat
 
 ## 2. Environment Variables
 
-Templates are provided in `.env.example`, `server/.env.example`, and `client/.env.example`.
+Templates are provided in `.env.example`, `backend/.env.example`, and `frontend/.env.example`.
 
-### Server Environment (`server/.env`)
+### Backend Environment (`backend/.env`)
 | Variable | Description | Example |
 | :--- | :--- | :--- |
 | `PORT` | Port the Express server listens on | `5000` |
@@ -62,7 +62,7 @@ Templates are provided in `.env.example`, `server/.env.example`, and `client/.en
 
 *The server validates `BASE_URL`, `DATABASE_URL`, and `PORT` on startup and fails fast if any are missing.*
 
-### Client Environment (`client/.env`)
+### Frontend Environment (`frontend/.env`)
 | Variable | Description | Example |
 | :--- | :--- | :--- |
 | `REACT_APP_API_URL` | Base URL of the backend API (CRA bundler) | `http://localhost:5000` |
@@ -72,7 +72,7 @@ Templates are provided in `.env.example`, `server/.env.example`, and `client/.en
 
 ## 3. Database Schema & Migration
 
-The PostgreSQL database schema is defined in [`server/schema.sql`](file:///d:/projects/url%20shortner/server/schema.sql). The server automatically applies it on startup, or you can run it manually in your PostgreSQL console:
+The PostgreSQL database schema is defined in [`backend/schema.sql`](file:///d:/projects/url%20shortner/backend/schema.sql). The server automatically applies it on startup, or you can run it manually in your PostgreSQL console:
 
 ```sql
 CREATE TABLE IF NOT EXISTS urls (
@@ -104,7 +104,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_urls_short_code ON urls(short_code);
 
 1. **Render**:
    - Create a new **Web Service** pointing to your repository.
-   - Set **Root Directory** to `server`.
+   - Set **Root Directory** to `backend`.
    - Set **Build Command** to `npm install`.
    - Set **Start Command** to `npm start`.
    - Add Environment Variables:
@@ -114,19 +114,19 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_urls_short_code ON urls(short_code);
      - `CLIENT_ORIGIN`: Your frontend URL (e.g. `https://your-frontend.vercel.app`)
 
 2. **Railway**:
-   - Deploy from GitHub repo and set root directory to `/server`.
+   - Deploy from GitHub repo and set root directory to `/backend`.
    - Add the environment variables (`BASE_URL`, `DATABASE_URL`, `PORT`, `CLIENT_ORIGIN`).
 
 ### C. Deploy the Frontend (Vercel or Netlify)
 
 1. **Vercel**:
    - Import your repository in [Vercel](https://vercel.com).
-   - Set **Root Directory** to `client`.
+   - Set **Root Directory** to `frontend`.
    - Framework preset: `Create React App`.
    - Add Environment Variable:
      - `REACT_APP_API_URL`: Your deployed backend URL (e.g. `https://your-backend.onrender.com`).
 2. **Netlify**:
-   - Import repo, set base directory to `client`, build command to `npm run build`, and publish directory to `build`.
+   - Import repo, set base directory to `frontend`, build command to `npm run build`, and publish directory to `build`.
    - Set `REACT_APP_API_URL` in **Site Configuration > Environment Variables**.
 
 ---

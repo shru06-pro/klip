@@ -18,7 +18,7 @@ if (missingEnv.length > 0) {
 
 const PORT = parseInt(process.env.PORT, 10)
 const BASE_URL = process.env.BASE_URL.trim()
-const CLIENT_ORIGIN = (process.env.CLIENT_ORIGIN || process.env.BASE_URL).trim()
+const CLIENT_ORIGIN = (process.env.FRONTEND_ORIGIN || process.env.CLIENT_ORIGIN || process.env.BASE_URL).trim()
 
 const app = express()
 

@@ -6,13 +6,17 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "concurrently -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm run server\" \"npm run client\"",
-    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm run server:dev\" \"npm run client\"",
-    "client": "npm start --prefix client",
-    "server": "npm start --prefix server",
-    "server:dev": "npm run dev --prefix server",
-    "install:all": "npm install && npm install --prefix client && npm install --prefix server",
-    "build:client": "npm run build --prefix client"
+    "start": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,magenta\" \"npm run backend\" \"npm run frontend\"",
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,magenta\" \"npm run backend:dev\" \"npm run frontend\"",
+    "frontend": "npm start --prefix frontend",
+    "backend": "npm start --prefix backend",
+    "backend:dev": "npm run dev --prefix backend",
+    "client": "npm run frontend",
+    "server": "npm run backend",
+    "server:dev": "npm run backend:dev",
+    "install:all": "npm install && npm install --prefix frontend && npm install --prefix backend",
+    "build:frontend": "npm run build --prefix frontend",
+    "build:client": "npm run build:frontend"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

@@ -1,16 +1,16 @@
-# Navigate to the client folder
-cd client
+# Navigate to the frontend folder
+cd frontend
 
-# Install client dependencies
+# Install frontend dependencies
 npm install
 
 # Return to the root folder
 cd ..
 
-# Navigate to the server folder
-cd server
+# Navigate to the backend folder
+cd backend
 
-# Install server dependencies
+# Install backend dependencies
 npm install
 
 # Return to the root folder

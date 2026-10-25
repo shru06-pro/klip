@@ -9,6 +9,6 @@ export const API_URL = envApiUrl.replace(/\/+$/, '')
 
 if (!API_URL && process.env.NODE_ENV !== 'production') {
   console.warn(
-    'Warning: REACT_APP_API_URL or VITE_API_URL is not defined in your client environment.'
+    'Warning: REACT_APP_API_URL or VITE_API_URL is not defined in your frontend environment.'
   )
 }

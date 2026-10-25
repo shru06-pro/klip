@@ -68,6 +68,7 @@ export default function Main() {
     }
 
     syncClicks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Runs once on mount to synchronize click counts with PostgreSQL
 
   const addLink = (newItem) => {
