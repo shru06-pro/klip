@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 
 const navItems = [
   { id: 'shorten', label: 'Shorten' },
@@ -9,6 +9,34 @@ const navItems = [
 
 export default function Header() {
   const [activeNav, setActiveNav] = useState('shorten')
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 })
+  const navRefs = useRef({})
+  const isClickScrolling = useRef(false)
+  const scrollTimeoutRef = useRef(null)
+
+  const updatePill = useCallback(() => {
+    const el = navRefs.current[activeNav]
+    if (el) {
+      setPillStyle({
+        left: el.offsetLeft,
+        width: el.offsetWidth,
+        opacity: 1,
+      })
+    }
+  }, [activeNav])
+
+  useLayoutEffect(() => {
+    updatePill()
+  }, [updatePill])
+
+  useEffect(() => {
+    const handleResize = () => updatePill()
+    window.addEventListener('resize', handleResize)
+    if (document.fonts) {
+      document.fonts.ready.then(handleResize)
+    }
+    return () => window.removeEventListener('resize', handleResize)
+  }, [updatePill])
 
   useEffect(() => {
     // Check initial hash on load
@@ -18,38 +46,97 @@ export default function Header() {
     }
 
     const handleScroll = () => {
-      const sections = navItems
+      if (isClickScrolling.current) return
+
+      // Check if user is scrolled near the bottom of the page
+      const isBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60
+
+      const sectionData = navItems
         .map((item) => {
           const el = document.getElementById(item.id)
           if (!el) return null
           const rect = el.getBoundingClientRect()
-          return { id: item.id, top: rect.top }
+          return {
+            id: item.id,
+            top: rect.top,
+            absoluteTop: rect.top + window.scrollY,
+          }
         })
         .filter(Boolean)
 
-      // Find section currently in view near the top
-      for (let i = sections.length - 1; i >= 0; i--) {
-        if (sections[i].top <= 180) {
-          setActiveNav(sections[i].id)
-          break
+      if (sectionData.length === 0) return
+
+      // Sort sections by actual document position from top to bottom
+      sectionData.sort((a, b) => a.absoluteTop - b.absoluteTop)
+
+      if (isBottom) {
+        setActiveNav(sectionData[sectionData.length - 1].id)
+        return
+      }
+
+      // Find section currently in view near the top (top <= 180)
+      let currentId = sectionData[0].id
+      for (let i = 0; i < sectionData.length; i++) {
+        if (sectionData[i].top <= 180) {
+          currentId = sectionData[i].id
         }
+      }
+      setActiveNav(currentId)
+    }
+
+    const handlePopState = () => {
+      const currentHash = window.location.hash.replace('#', '')
+      if (currentHash && navItems.some((n) => n.id === currentHash)) {
+        setActiveNav(currentHash)
       }
     }
 
+    const handleUserScroll = () => {
+      isClickScrolling.current = false
+    }
+
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('popstate', handlePopState)
+    window.addEventListener('wheel', handleUserScroll, { passive: true })
+    window.addEventListener('touchmove', handleUserScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('popstate', handlePopState)
+      window.removeEventListener('wheel', handleUserScroll)
+      window.removeEventListener('touchmove', handleUserScroll)
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+    }
   }, [])
 
   const handleNavClick = (e, id) => {
-    e.preventDefault()
+    if (e) e.preventDefault()
     setActiveNav(id)
+
     const el = document.getElementById(id)
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' })
+      // Temporarily lock scroll listener from overriding during smooth scroll
+      isClickScrolling.current = true
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+
+      scrollTimeoutRef.current = setTimeout(() => {
+        isClickScrolling.current = false
+      }, 900)
+
+      const navOffset = 90
+      const elementPosition = el.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset
+
+      window.scrollTo({
+        top: Math.max(0, offsetPosition),
+        behavior: 'smooth',
+      })
+
       window.history.pushState(null, '', `#${id}`)
       if (id === 'shorten') {
         const input = document.getElementById('longUrlInput')
-        if (input) setTimeout(() => input.focus(), 300)
+        if (input) setTimeout(() => input.focus(), 350)
       }
     }
   }
@@ -62,7 +149,11 @@ export default function Header() {
     <header className="sticky top-0 z-50 pt-5 px-4 sm:px-6">
       <nav className="max-w-5xl mx-auto rounded-full px-5 sm:px-6 py-3 bg-white/85 backdrop-blur-md border border-border shadow-[0_10px_35px_-10px_rgba(39,39,42,0.08)] flex items-center justify-between gap-4 transition-all">
         {/* Logo mark + handwritten brand */}
-        <a className="flex items-center gap-2.5 group" href="/">
+        <a
+          className="flex items-center gap-2.5 group cursor-pointer"
+          href="#shorten"
+          onClick={(e) => handleNavClick(e, 'shorten')}
+        >
           <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-serif text-lg font-bold shadow-sm transition-transform group-hover:scale-105">
             K
           </div>
@@ -72,17 +163,28 @@ export default function Header() {
         </a>
 
         {/* Middle Navigation with dynamic active pill */}
-        <div className="hidden md:flex items-center gap-1.5 p-1 bg-canvas/70 rounded-full border border-border/70 text-sm">
+        <div className="relative hidden md:flex items-center gap-1.5 p-1 bg-canvas/70 rounded-full border border-border/70 text-sm">
+          {/* Animated sliding pill background */}
+          <span
+            className="absolute top-1 bottom-1 bg-white rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out pointer-events-none"
+            style={{
+              left: `${pillStyle.left}px`,
+              width: `${pillStyle.width}px`,
+              opacity: pillStyle.opacity,
+            }}
+          />
+
           {navItems.map((item) => {
             const isActive = activeNav === item.id
             return (
               <a
                 key={item.id}
+                ref={(el) => (navRefs.current[item.id] = el)}
                 href={`#${item.id}`}
                 onClick={(e) => handleNavClick(e, item.id)}
-                className={`px-4 py-1.5 rounded-full font-medium transition-all duration-200 cursor-pointer ${
+                className={`relative z-10 px-4 py-1.5 rounded-full font-medium transition-colors duration-200 cursor-pointer ${
                   isActive
-                    ? 'bg-white text-ink shadow-[0_2px_8px_rgba(0,0,0,0.06)]'
+                    ? `text-ink ${pillStyle.opacity === 0 ? 'bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]' : ''}`
                     : 'text-muted hover:text-ink'
                 }`}
               >
