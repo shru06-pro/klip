@@ -1,13 +1,61 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+
+const navItems = [
+  { id: 'shorten', label: 'Shorten' },
+  { id: 'recent', label: 'Recent Links' },
+  { id: 'engine', label: 'Engine' },
+  { id: 'analytics', label: 'Analytics' },
+]
 
 export default function Header() {
-  const scrollToShorten = () => {
-    const el = document.getElementById('shorten')
+  const [activeNav, setActiveNav] = useState('shorten')
+
+  useEffect(() => {
+    // Check initial hash on load
+    const hash = window.location.hash.replace('#', '')
+    if (hash && navItems.some((n) => n.id === hash)) {
+      setActiveNav(hash)
+    }
+
+    const handleScroll = () => {
+      const sections = navItems
+        .map((item) => {
+          const el = document.getElementById(item.id)
+          if (!el) return null
+          const rect = el.getBoundingClientRect()
+          return { id: item.id, top: rect.top }
+        })
+        .filter(Boolean)
+
+      // Find section currently in view near the top
+      for (let i = sections.length - 1; i >= 0; i--) {
+        if (sections[i].top <= 180) {
+          setActiveNav(sections[i].id)
+          break
+        }
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const handleNavClick = (e, id) => {
+    e.preventDefault()
+    setActiveNav(id)
+    const el = document.getElementById(id)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' })
-      const input = document.getElementById('longUrlInput')
-      if (input) input.focus()
+      window.history.pushState(null, '', `#${id}`)
+      if (id === 'shorten') {
+        const input = document.getElementById('longUrlInput')
+        if (input) setTimeout(() => input.focus(), 300)
+      }
     }
+  }
+
+  const scrollToShorten = (e) => {
+    handleNavClick(e, 'shorten')
   }
 
   return (
@@ -23,32 +71,25 @@ export default function Header() {
           </span>
         </a>
 
-        {/* Middle Navigation */}
+        {/* Middle Navigation with dynamic active pill */}
         <div className="hidden md:flex items-center gap-1.5 p-1 bg-canvas/70 rounded-full border border-border/70 text-sm">
-          <a
-            className="px-4 py-1.5 rounded-full font-medium bg-white text-ink shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-            href="#shorten"
-          >
-            Shorten
-          </a>
-          <a
-            className="px-4 py-1.5 rounded-full font-medium text-muted hover:text-ink transition-colors"
-            href="#recent"
-          >
-            Recent Links
-          </a>
-          <a
-            className="px-4 py-1.5 rounded-full font-medium text-muted hover:text-ink transition-colors"
-            href="#engine"
-          >
-            Engine
-          </a>
-          <a
-            className="px-4 py-1.5 rounded-full font-medium text-muted hover:text-ink transition-colors"
-            href="#analytics"
-          >
-            Analytics
-          </a>
+          {navItems.map((item) => {
+            const isActive = activeNav === item.id
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => handleNavClick(e, item.id)}
+                className={`px-4 py-1.5 rounded-full font-medium transition-all duration-200 cursor-pointer ${
+                  isActive
+                    ? 'bg-white text-ink shadow-[0_2px_8px_rgba(0,0,0,0.06)]'
+                    : 'text-muted hover:text-ink'
+                }`}
+              >
+                {item.label}
+              </a>
+            )
+          })}
         </div>
 
         {/* Right controls */}
