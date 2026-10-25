@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_standard" name="shell-type"/>
+<title>Klip. — Tiny and Shareable Links</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&amp;family=DM+Mono:ital,wght@0,400;0,500;1,400&amp;family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&amp;family=Instrument+Serif:ital@0;1&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            canvas: "#F8F6F2",
+            surface: "#FFFFFF",
+            ink: "#27272A",
+            muted: "#6B6B73",
+            border: "#E7E4DE",
+            accent: "#8478A8",
+            "accent-soft": "#A99BD8",
+            "accent-tint": "#EEEAF7",
+            success: "#7C9A85",
+            danger: "#C97B84"
+          },
+          fontFamily: {
+            serif: ['"Instrument Serif"', "serif"],
+            sans: ['"DM Sans"', "sans-serif"],
+            mono: ['"DM Mono"', "monospace"],
+            script: ['"Caveat"', "cursive"]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+      50% { transform: translateY(-7px) rotate(6deg) scale(1.08); }
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.35; transform: scale(0.9); }
+      50% { opacity: 0.95; transform: scale(1.15); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .animate-float-1 { animation: floatSlow 5s ease-in-out infinite; }
+      .animate-float-2 { animation: floatSlow 6.5s ease-in-out 1.2s infinite; }
+      .animate-twinkle-1 { animation: twinkle 3.8s ease-in-out infinite; }
+      .animate-twinkle-2 { animation: twinkle 4.6s ease-in-out 1s infinite; }
+    }
+    ::selection {
+      background-color: #EEEAF7;
+      color: #8478A8;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-ink font-sans antialiased min-h-screen selection:bg-accent-tint selection:text-accent">
+<!-- Floating Pill Navbar -->
+<header class="sticky top-0 z-50 pt-5 px-4 sm:px-6">
+<nav class="max-w-5xl mx-auto rounded-full px-5 sm:px-6 py-3 bg-white/85 backdrop-blur-md border border-border shadow-[0_10px_35px_-10px_rgba(39,39,42,0.08)] flex items-center justify-between gap-4 transition-all">
+<!-- Logo mark + handwritten brand -->
+<a class="flex items-center gap-2.5 group" href="#">
+<div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-serif text-lg font-bold shadow-sm transition-transform group-hover:scale-105">
+          K
+        </div>
+<span class="font-script text-2xl font-bold text-ink tracking-tight -rotate-2 group-hover:rotate-0 transition-transform">
+          Klip<span class="text-accent">.</span>
+</span>
+</a>
+<!-- Middle Navigation -->
+<div class="hidden md:flex items-center gap-1.5 p-1 bg-canvas/70 rounded-full border border-border/70 text-sm">
+<a class="px-4 py-1.5 rounded-full font-medium bg-white text-ink shadow-[0_2px_8px_rgba(0,0,0,0.04)]" href="#shorten">Shorten</a>
+<a class="px-4 py-1.5 rounded-full font-medium text-muted hover:text-ink transition-colors" href="#recent">Recent Links</a>
+<a class="px-4 py-1.5 rounded-full font-medium text-muted hover:text-ink transition-colors" href="#analytics">Analytics</a>
+<a class="px-4 py-1.5 rounded-full font-medium text-muted hover:text-ink transition-colors" href="#bio">Bio Pages</a>
+</div>
+<!-- Right controls -->
+<div class="flex items-center gap-2.5">
+<div class="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-canvas border border-border text-xs font-mono text-muted">
+<span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+<span>API: 99.98% Fast</span>
+</div>
+<button class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent-tint text-accent hover:bg-accent hover:text-white transition-all text-xs font-mono font-medium border border-accent/20" type="button">
+<span>New Link</span>
+<span class="text-xs">+</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-border ring-2 ring-white">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaw-zcta9N5Q5ArDQQBbY3nS170GmabkTh152n_JKdq9Z6lGU_mvFmEvuSXZNgG8_jxeEjq_D4na-9K72vZjLGb18XT0a-NB9dea4lPM9HmjGq1rjIaWmKPjOgX2pfSVOw7wXPOz1QDBzH2mDhls2hPFAAJu1WWdUihDPKo0sJgB743XRc8Blc01UtGGTsgWnjzk34w3obgVgXUCKS6nsVcTIvsZtwNEvQQViBTB63QdVFGWEJU_r5"/>
+</div>
+</div>
+</nav>
+</header>
+<main class="relative w-full overflow-hidden">
+<!-- Ambient Lavender Glow Blobs -->
+<div class="absolute top-10 left-1/2 -translate-x-1/2 w-[720px] h-[440px] bg-accent-soft/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute top-96 left-1/4 w-80 h-80 bg-accent-tint/60 rounded-full blur-2xl pointer-events-none -z-10"></div>
+<!-- 1. HERO SECTION -->
+<section class="relative pt-16 sm:pt-20 pb-8 px-4 max-w-4xl mx-auto text-center">
+<!-- Decorative Sparkles -->
+<div aria-hidden="true" class="absolute top-14 left-6 sm:left-12 text-accent-soft animate-twinkle-1 hidden sm:block">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 0L14.2 9.8L24 12L14.2 14.2L12 24L9.8 14.2L0 12L9.8 9.8L12 0Z"></path>
+</svg>
+</div>
+<div aria-hidden="true" class="absolute top-24 right-8 sm:right-16 text-accent animate-float-1 hidden sm:block">
+<svg class="w-7 h-7" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 0L13.8 8.2L22 10.5L14.5 13.5L12 22L9.5 13.5L2 10.5L10.2 8.2L12 0Z"></path>
+</svg>
+</div>
+<div aria-hidden="true" class="absolute bottom-6 left-1/4 text-accent-soft/80 animate-twinkle-2 hidden md:block">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 0L14 10L24 12L14 14L12 24L10 14L0 12L10 10L12 0Z"></path>
+</svg>
+</div>
+<!-- Eyebrow Pill + Mono Label -->
+<div class="flex flex-col items-center gap-3 mb-6">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-border shadow-[0_2px_12px_rgba(0,0,0,0.03)] text-xs text-muted font-sans font-medium">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span>Free · No signup needed</span>
+</div>
+<span class="font-mono text-xs uppercase tracking-[0.2em] text-muted">
+          SHORT LINKS · FAST · SHAREABLE
+        </span>
+</div>
+<!-- Huge Serif Signature Headline -->
+<h1 class="font-serif text-[clamp(2.75rem,7vw,5.25rem)] leading-[0.96] tracking-[-0.025em] text-ink font-normal mb-5 max-w-3xl mx-auto">
+        Make long links <span class="italic text-accent">tiny</span> and shareable<span class="text-accent">.</span>
+</h1>
+<p class="font-sans text-base sm:text-lg text-muted max-w-xl mx-auto leading-relaxed">
+        The neo-minimalist link shortener crafted for independent creators, studios, and editorial curators. Clean, edge-routed, zero noise.
+      </p>
+</section>
+<!-- 2. THE SHORTEN FORM (MAIN CTA) -->
+<section class="max-w-3xl mx-auto px-4 my-6" id="shorten">
+<div class="bg-white rounded-full border border-border shadow-[0_12px_40px_-10px_rgba(39,39,42,0.1)] p-2 pl-4 sm:pl-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 transition-all focus-within:ring-2 focus-within:ring-accent/30 focus-within:border-accent">
+<div class="flex items-center gap-2.5 flex-1 min-w-0">
+<span class="material-symbols-outlined text-muted text-xl shrink-0">link</span>
+<input class="w-full bg-transparent border-0 focus:ring-0 text-ink text-sm sm:text-base placeholder-muted/60 p-0 font-normal truncate" id="longUrlInput" placeholder="Paste raw URL here..." type="url" value="https://archive.lookbook.studio/curated/editorial-spring-drop-limited-run?utm_source=instagram&amp;campaign=ss25"/>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+<!-- Quick paste trigger -->
+<button class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-mono text-muted hover:text-ink hover:bg-canvas transition-colors" id="pasteBtn" title="Paste from clipboard" type="button">
+<span class="material-symbols-outlined text-sm">content_paste</span>
+<span>⌘V</span>
+</button>
+<!-- Submit Button -->
+<button class="bg-ink text-white hover:bg-[#3F3F46] rounded-full px-6 py-3 font-medium text-sm flex items-center justify-center gap-2 transition hover:-translate-y-0.5 active:translate-y-0 shadow-sm shrink-0" id="klipActionBtn" type="button">
+<span>Klip It</span>
+<span class="material-symbols-outlined text-base text-accent-soft">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Domain & Custom Slug Sub-bar -->
+<div class="mt-3 flex flex-wrap items-center justify-between gap-2.5 px-3">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="font-mono text-xs uppercase tracking-wider text-muted">Root:</span>
+<div class="inline-flex rounded-full p-1 bg-white border border-border text-xs font-mono">
+<button class="domain-pill px-3 py-0.5 rounded-full bg-accent-tint text-accent font-medium transition-all" type="button">klip.to/</button>
+<button class="domain-pill px-3 py-0.5 rounded-full text-muted hover:text-ink transition-all" type="button">go.cool/</button>
+<button class="domain-pill px-3 py-0.5 rounded-full text-muted hover:text-ink transition-all" type="button">bio.st/</button>
+</div>
+<div class="inline-flex items-center bg-white border border-border rounded-full px-3 py-1 gap-1 text-xs font-mono">
+<span class="text-muted">slug:</span>
+<input class="bg-transparent border-0 p-0 text-ink text-xs font-mono focus:ring-0 w-20 outline-none" id="aliasInput" type="text" value="summer25"/>
+<span class="w-1.5 h-1.5 rounded-full bg-success ml-1"></span>
+</div>
+</div>
+<!-- Toggles / Micro Badges -->
+<div class="flex items-center gap-3 text-xs text-muted font-mono">
+<label class="flex items-center gap-1.5 cursor-pointer hover:text-ink select-none">
+<input checked="" class="rounded text-accent focus:ring-accent/20 border-border" type="checkbox"/>
+<span>QR Ready</span>
+</label>
+<label class="flex items-center gap-1.5 cursor-pointer hover:text-ink select-none">
+<input checked="" class="rounded text-accent focus:ring-accent/20 border-border" type="checkbox"/>
+<span>Auto-30d</span>
+</label>
+<div class="hidden sm:flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-accent">lock</span>
+<span>Encrypted</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. ACTIVE / GENERATED RESULT CARD -->
+<section class="max-w-3xl mx-auto px-4 mt-8 mb-16" id="resultCard">
+<div class="rounded-3xl bg-white border border-border shadow-[0_10px_35px_-10px_rgba(39,39,42,0.06)] p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 transition-transform">
+<!-- Left Side: Result Details -->
+<div class="flex-1 w-full space-y-4">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="px-3 py-1 rounded-full bg-accent-tint text-accent text-xs font-mono font-medium tracking-wide">
+              ACTIVE KLIP
+            </span>
+<span class="text-xs text-muted font-mono">Created just now</span>
+<span class="w-1 h-1 rounded-full bg-border"></span>
+<span class="text-xs text-success font-mono flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+              Synced on Edge
+            </span>
+</div>
+<div>
+<div class="font-mono text-xs uppercase tracking-wider text-muted mb-1">Shortened URL</div>
+<div class="flex items-center gap-3 flex-wrap">
+<a class="font-serif text-3xl sm:text-4xl text-ink font-normal hover:text-accent transition-colors tracking-tight" href="#visit" id="activeShortLink">
+                klip.to/summer25
+              </a>
+<button class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-canvas hover:bg-accent-tint text-ink hover:text-accent border border-border text-xs font-mono font-medium transition-all active:scale-95 shadow-sm" id="copyResultBtn" type="button">
+<span class="material-symbols-outlined text-base" id="copyIcon">content_copy</span>
+<span id="copyBtnText">Copy</span>
+</button>
+</div>
+<p class="text-xs text-muted font-sans truncate max-w-md pt-2">
+              Original: <span class="text-ink">https://archive.lookbook.studio/curated/editorial-spring-drop-limited-run...</span>
+</p>
+</div>
+<!-- Quick Micro Badges -->
+<div class="flex items-center gap-3 pt-1">
+<div class="bg-canvas px-3 py-1 rounded-full text-xs font-mono text-muted border border-border/80 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-accent">mouse</span>
+<span>0 clicks</span>
+</div>
+<div class="bg-canvas px-3 py-1 rounded-full text-xs font-mono text-muted border border-border/80 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-muted">timer</span>
+<span>29d 23h left</span>
+</div>
+<div class="bg-canvas px-3 py-1 rounded-full text-xs font-mono text-muted border border-border/80 hidden sm:flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-success">verified</span>
+<span>SSL Protected</span>
+</div>
+</div>
+</div>
+<!-- Right Side: Clean Aesthetic QR Code Card -->
+<div class="bg-canvas rounded-2xl p-4 border border-border flex flex-col items-center gap-3 shrink-0 shadow-sm w-full md:w-auto">
+<div class="relative w-32 h-32 bg-white rounded-xl p-2.5 border border-border flex items-center justify-center shadow-inner">
+<svg class="w-full h-full text-ink" fill="currentColor" viewbox="0 0 120 120">
+<!-- Corner Finder 1 -->
+<rect fill="currentColor" height="30" rx="4" width="30" x="10" y="10"></rect>
+<rect fill="#FFFFFF" height="18" rx="2" width="18" x="16" y="16"></rect>
+<rect fill="#8478A8" height="8" rx="1" width="8" x="21" y="21"></rect>
+<!-- Corner Finder 2 -->
+<rect fill="currentColor" height="30" rx="4" width="30" x="80" y="10"></rect>
+<rect fill="#FFFFFF" height="18" rx="2" width="18" x="86" y="16"></rect>
+<rect fill="#8478A8" height="8" rx="1" width="8" x="91" y="21"></rect>
+<!-- Corner Finder 3 -->
+<rect fill="currentColor" height="30" rx="4" width="30" x="10" y="80"></rect>
+<rect fill="#FFFFFF" height="18" rx="2" width="18" x="16" y="86"></rect>
+<rect fill="#8478A8" height="8" rx="1" width="8" x="21" y="91"></rect>
+<!-- Data Dots -->
+<rect height="6" rx="1" width="6" x="48" y="12"></rect>
+<rect height="6" rx="1" width="6" x="58" y="12"></rect>
+<rect height="6" rx="1" width="6" x="68" y="20"></rect>
+<rect height="6" rx="1" width="6" x="48" y="28"></rect>
+<rect height="6" rx="1" width="6" x="58" y="36"></rect>
+<rect height="6" rx="1" width="6" x="12" y="48"></rect>
+<rect height="6" rx="1" width="6" x="24" y="48"></rect>
+<rect height="6" rx="1" width="6" x="36" y="58"></rect>
+<rect height="6" rx="1" width="6" x="12" y="68"></rect>
+<!-- Center Lavender Emblem -->
+<rect fill="#8478A8" height="26" rx="6" width="26" x="47" y="47"></rect>
+<circle cx="60" cy="60" fill="#FFFFFF" r="4.5"></circle>
+<!-- Additional Data Dots -->
+<rect height="6" rx="1" width="6" x="80" y="48"></rect>
+<rect height="6" rx="1" width="6" x="96" y="58"></rect>
+<rect height="6" rx="1" width="6" x="84" y="68"></rect>
+<rect height="6" rx="1" width="6" x="102" y="74"></rect>
+<rect height="6" rx="1" width="6" x="48" y="82"></rect>
+<rect height="6" rx="1" width="6" x="62" y="92"></rect>
+<rect height="6" rx="1" width="6" x="74" y="84"></rect>
+<rect height="6" rx="1" width="6" x="88" y="96"></rect>
+<rect height="6" rx="1" width="6" x="100" y="88"></rect>
+</svg>
+</div>
+<div class="flex items-center gap-1.5 w-full">
+<button class="flex-1 py-1 px-2.5 rounded-full bg-white hover:bg-accent-tint text-ink hover:text-accent font-mono text-[11px] border border-border transition-colors text-center" type="button">
+              SVG Vector
+            </button>
+<button class="flex-1 py-1 px-2.5 rounded-full bg-white hover:bg-accent-tint text-ink hover:text-accent font-mono text-[11px] border border-border transition-colors text-center" type="button">
+              PNG 4K
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. EDITORIAL BENTO / FEATURES SUITE -->
+<section class="max-w-5xl mx-auto px-4 mb-20">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
+<div>
+<span class="font-mono text-xs uppercase tracking-[0.2em] text-muted">// ENGINE SUITE</span>
+<h2 class="font-serif text-3xl sm:text-4xl text-ink font-normal tracking-tight mt-1">
+            Engineered for Editorial Velocity
+          </h2>
+</div>
+<p class="font-sans text-sm text-muted max-w-sm">
+          Precision edge routing without surveillance scripts or redirect bloat. Pure typographic clarity for your links.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<!-- Bento Card 1 -->
+<div class="bg-white rounded-2xl p-6 border border-border shadow-[0_4px_20px_-4px_rgba(39,39,42,0.04)] flex flex-col justify-between hover:-translate-y-0.5 transition-all">
+<div class="space-y-3">
+<div class="w-10 h-10 rounded-full bg-accent-tint text-accent flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">alt_route</span>
+</div>
+<h3 class="font-sans font-medium text-lg text-ink">Universal Deep Links</h3>
+<p class="text-sm text-muted leading-relaxed">
+              Bypass internal social in-app webviews seamlessly. Direct fans straight into native Spotify, iOS, or YouTube targets.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-border/70 flex items-center gap-1.5">
+<span class="px-2.5 py-1 rounded-full bg-canvas text-ink font-mono text-xs border border-border">iOS</span>
+<span class="px-2.5 py-1 rounded-full bg-canvas text-ink font-mono text-xs border border-border">Android</span>
+<span class="px-2.5 py-1 rounded-full bg-canvas text-ink font-mono text-xs border border-border">PWA</span>
+</div>
+</div>
+<!-- Bento Card 2 -->
+<div class="bg-white rounded-2xl p-6 border border-border shadow-[0_4px_20px_-4px_rgba(39,39,42,0.04)] flex flex-col justify-between hover:-translate-y-0.5 transition-all">
+<div class="space-y-3">
+<div class="w-10 h-10 rounded-full bg-accent-tint text-accent flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">tune</span>
+</div>
+<h3 class="font-sans font-medium text-lg text-ink">UTM Studio Presets</h3>
+<p class="text-sm text-muted leading-relaxed">
+              Inject editorial campaign attribution taxonomy cleanly at the edge with zero tracking cookies or client-side JavaScript lag.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-border/70 flex flex-wrap gap-1.5">
+<span class="px-2.5 py-1 rounded-full bg-canvas text-muted font-mono text-[11px] border border-border">#Substack</span>
+<span class="px-2.5 py-1 rounded-full bg-canvas text-muted font-mono text-[11px] border border-border">#InstagramBio</span>
+<span class="px-2.5 py-1 rounded-full bg-canvas text-muted font-mono text-[11px] border border-border">#TikTok</span>
+</div>
+</div>
+<!-- Bento Card 3 -->
+<div class="bg-white rounded-2xl p-6 border border-border shadow-[0_4px_20px_-4px_rgba(39,39,42,0.04)] flex flex-col justify-between hover:-translate-y-0.5 transition-all">
+<div class="space-y-3">
+<div class="w-10 h-10 rounded-full bg-accent-tint text-accent flex items-center justify-center">
+<span class="material-symbols-outlined text-xl">insights</span>
+</div>
+<h3 class="font-sans font-medium text-lg text-ink">Edge Telemetry</h3>
+<p class="text-sm text-muted leading-relaxed">
+              Live click velocity aggregated at 285 CDN edge locations worldwide with ultra-low latency redirection under 40ms.
+            </p>
+</div>
+<div class="mt-6 pt-4 border-t border-border/70 flex items-center justify-between">
+<div>
+<div class="font-mono text-[11px] text-muted uppercase">Global Rate</div>
+<div class="font-mono text-sm text-accent font-medium">+1,420 hits / hr</div>
+</div>
+<svg class="w-20 h-6 text-accent" fill="none" viewbox="0 0 100 30">
+<path d="M0 25 L15 22 L30 26 L45 15 L60 18 L75 8 L90 12 L100 4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. RECENT KLIPS ARCHIVE TABLE / LEDGER -->
+<section class="max-w-5xl mx-auto px-4 mb-24" id="recent">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 gap-3">
+<div>
+<span class="font-mono text-xs uppercase tracking-[0.2em] text-muted">// LINK LEDGER</span>
+<h2 class="font-serif text-3xl sm:text-4xl text-ink font-normal tracking-tight mt-1">
+            Recent Active Klips
+          </h2>
+</div>
+<!-- Filter Pills Bar -->
+<div class="inline-flex items-center gap-1 p-1 bg-white border border-border rounded-full text-xs font-mono shadow-sm self-start sm:self-auto">
+<button class="px-3.5 py-1 rounded-full bg-accent-tint text-accent font-medium" type="button">All (24)</button>
+<button class="px-3 py-1 rounded-full text-muted hover:text-ink transition-colors" type="button">Active</button>
+<button class="px-3 py-1 rounded-full text-muted hover:text-ink transition-colors" type="button">Expiring Soon</button>
+</div>
+</div>
+<div class="space-y-3">
+<!-- Row 1: Fashion Drop -->
+<div class="bg-white hover:-translate-y-0.5 p-4 sm:p-5 rounded-2xl border border-border transition-all shadow-[0_4px_20px_-4px_rgba(39,39,42,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="space-y-1 min-w-0 flex-1">
+<div class="flex items-center gap-2.5 flex-wrap">
+<span class="font-mono text-base font-medium text-accent">klip.to/ss25</span>
+<span class="px-2 py-0.5 rounded-full bg-canvas text-muted text-[11px] font-mono border border-border">Fashion</span>
+<span class="px-2 py-0.5 rounded-full bg-canvas text-muted text-[11px] font-mono border border-border">Editorial</span>
+</div>
+<div class="text-xs text-muted font-sans truncate">
+              lookbook.studio/curated/ss25-runway-edition
+            </div>
+</div>
+<div class="flex items-center gap-6 shrink-0">
+<div class="flex items-center gap-3">
+<div class="text-right">
+<div class="font-mono text-xs font-semibold text-ink">14,280</div>
+<div class="font-mono text-[11px] text-muted">Clicks</div>
+</div>
+<svg class="w-16 h-6 text-accent" fill="none" viewbox="0 0 80 30">
+<path d="M0 24 L16 20 L32 26 L48 10 L64 16 L80 4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="hidden sm:block text-right">
+<div class="font-mono text-xs text-ink font-medium">68% Instagram</div>
+<div class="font-mono text-[11px] text-muted">Primary source</div>
+</div>
+<!-- Action buttons -->
+<div class="flex items-center gap-1.5">
+<button class="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-accent-tint hover:text-accent flex items-center justify-center text-muted transition-colors" title="Copy Link" type="button">
+<span class="material-symbols-outlined text-base">content_copy</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-accent-tint hover:text-accent flex items-center justify-center text-muted transition-colors" title="View QR" type="button">
+<span class="material-symbols-outlined text-base">qr_code</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-accent-tint hover:text-accent flex items-center justify-center text-muted transition-colors" title="Settings" type="button">
+<span class="material-symbols-outlined text-base">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Row 2: Podcast Premiere -->
+<div class="bg-white hover:-translate-y-0.5 p-4 sm:p-5 rounded-2xl border border-border transition-all shadow-[0_4px_20px_-4px_rgba(39,39,42,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="space-y-1 min-w-0 flex-1">
+<div class="flex items-center gap-2.5 flex-wrap">
+<span class="font-mono text-base font-medium text-accent">go.cool/ep42</span>
+<span class="px-2 py-0.5 rounded-full bg-canvas text-muted text-[11px] font-mono border border-border">Podcast</span>
+<span class="px-2 py-0.5 rounded-full bg-canvas text-muted text-[11px] font-mono border border-border">Audio</span>
+</div>
+<div class="text-xs text-muted font-sans truncate">
+              open.spotify.com/episode/3mKz8U09Q?si=editorial-deepdive
+            </div>
+</div>
+<div class="flex items-center gap-6 shrink-0">
+<div class="flex items-center gap-3">
+<div class="text-right">
+<div class="font-mono text-xs font-semibold text-ink">8,941</div>
+<div class="font-mono text-[11px] text-muted">Clicks</div>
+</div>
+<svg class="w-16 h-6 text-accent-soft" fill="none" viewbox="0 0 80 30">
+<path d="M0 26 L20 18 L40 22 L55 12 L70 14 L80 2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="hidden sm:block text-right">
+<div class="font-mono text-xs text-ink font-medium">52% Substack</div>
+<div class="font-mono text-[11px] text-muted">Primary source</div>
+</div>
+<!-- Action buttons -->
+<div class="flex items-center gap-1.5">
+<button class="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-accent-tint hover:text-accent flex items-center justify-center text-muted transition-colors" title="Copy Link" type="button">
+<span class="material-symbols-outlined text-base">content_copy</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-accent-tint hover:text-accent flex items-center justify-center text-muted transition-colors" title="View QR" type="button">
+<span class="material-symbols-outlined text-base">qr_code</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-accent-tint hover:text-accent flex items-center justify-center text-muted transition-colors" title="Settings" type="button">
+<span class="material-symbols-outlined text-base">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Row 3: Design Portfolio -->
+<div class="bg-white hover:-translate-y-0.5 p-4 sm:p-5 rounded-2xl border border-border transition-all shadow-[0_4px_20px_-4px_rgba(39,39,42,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="space-y-1 min-w-0 flex-1">
+<div class="flex items-center gap-2.5 flex-wrap">
+<span class="font-mono text-base font-medium text-accent">bio.st/folio</span>
+<span class="px-2 py-0.5 rounded-full bg-canvas text-muted text-[11px] font-mono border border-border">Bio Link</span>
+<span class="px-2 py-0.5 rounded-full bg-success/10 text-success text-[11px] font-mono border border-success/20">Verified</span>
+</div>
+<div class="text-xs text-muted font-sans truncate">
+              readymag.website/technologist/portfolio-neo-noir-minimal
+            </div>
+</div>
+<div class="flex items-center gap-6 shrink-0">
+<div class="flex items-center gap-3">
+<div class="text-right">
+<div class="font-mono text-xs font-semibold text-ink">29,104</div>
+<div class="font-mono text-[11px] text-muted">Clicks</div>
+</div>
+<svg class="w-16 h-6 text-accent" fill="none" viewbox="0 0 80 30">
+<path d="M0 20 L15 15 L35 22 L50 8 L65 14 L80 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="hidden sm:block text-right">
+<div class="font-mono text-xs text-ink font-medium">84% Direct</div>
+<div class="font-mono text-[11px] text-muted">Primary source</div>
+</div>
+<!-- Action buttons -->
+<div class="flex items-center gap-1.5">
+<button class="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-accent-tint hover:text-accent flex items-center justify-center text-muted transition-colors" title="Copy Link" type="button">
+<span class="material-symbols-outlined text-base">content_copy</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-accent-tint hover:text-accent flex items-center justify-center text-muted transition-colors" title="View QR" type="button">
+<span class="material-symbols-outlined text-base">qr_code</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-border bg-canvas hover:bg-accent-tint hover:text-accent flex items-center justify-center text-muted transition-colors" title="Settings" type="button">
+<span class="material-symbols-outlined text-base">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- MINIMAL MUTED FOOTER -->
+<footer class="w-full bg-white border-t border-border py-8 px-4">
+<div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center font-serif text-xs font-bold">
+          K
+        </div>
+<span class="font-script text-xl font-bold text-ink">Klip.</span>
+<span class="font-mono text-xs text-muted ml-2">v2.4.0 Engine</span>
+</div>
+<p class="font-sans text-xs text-muted">
+        © 2025 Klip. Engineered for creative technologists. All rights reserved.
+      </p>
+<div class="font-mono text-xs text-muted flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span>SYS.STATUS // NOMINAL</span>
+</div>
+</div>
+</footer>
+<!-- Interactive Scripts -->
+<script>
+    (function initKlipLight() {
+      const klipBtn = document.getElementById('klipActionBtn');
+      const aliasInput = document.getElementById('aliasInput');
+      const longUrlInput = document.getElementById('longUrlInput');
+      const resultCard = document.getElementById('resultCard');
+      const activeShortLink = document.getElementById('activeShortLink');
+      const copyBtn = document.getElementById('copyResultBtn');
+      const copyBtnText = document.getElementById('copyBtnText');
+      const copyIcon = document.getElementById('copyIcon');
+      const pasteBtn = document.getElementById('pasteBtn');
+      const domainPills = document.querySelectorAll('.domain-pill');
+
+      let selectedDomain = 'klip.to/';
+
+      domainPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          domainPills.forEach(p => {
+            p.classList.remove('bg-accent-tint', 'text-accent', 'font-medium');
+            p.classList.add('text-muted');
+          });
+          pill.classList.remove('text-muted');
+          pill.classList.add('bg-accent-tint', 'text-accent', 'font-medium');
+          selectedDomain = pill.textContent.trim();
+          updateLiveDisplay();
+        });
+      });
+
+      function updateLiveDisplay() {
+        const slug = aliasInput.value.trim() || 'summer25';
+        if (activeShortLink) {
+          activeShortLink.textContent = selectedDomain + slug;
+        }
+      }
+
+      aliasInput.addEventListener('input', updateLiveDisplay);
+
+      klipBtn.addEventListener('click', () => {
+        const slug = aliasInput.value.trim() || 'link-' + Math.floor(Math.random() * 899 + 100);
+        activeShortLink.textContent = selectedDomain + slug;
+
+        resultCard.classList.add('scale-[1.01]');
+        setTimeout(() => {
+          resultCard.classList.remove('scale-[1.01]');
+        }, 220);
+
+        copyBtnText.textContent = 'Copy';
+        copyIcon.textContent = 'content_copy';
+        copyBtn.classList.remove('bg-success/15', 'text-success', 'border-success/30');
+      });
+
+      copyBtn.addEventListener('click', () => {
+        const textToCopy = 'https://' + activeShortLink.textContent.trim();
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          copyBtnText.textContent = 'Copied!';
+          copyIcon.textContent = 'check';
+          copyBtn.classList.add('bg-success/15', 'text-success', 'border-success/30');
+          setTimeout(() => {
+            copyBtnText.textContent = 'Copy';
+            copyIcon.textContent = 'content_copy';
+            copyBtn.classList.remove('bg-success/15', 'text-success', 'border-success/30');
+          }, 2400);
+        });
+      });
+
+      if (pasteBtn) {
+        pasteBtn.addEventListener('click', async () => {
+          try {
+            const clipboardText = await navigator.clipboard.readText();
+            if (clipboardText) {
+              longUrlInput.value = clipboardText;
+            }
+          } catch (err) {
+            longUrlInput.focus();
+          }
+        });
+      }
+    })();
+  </script>
+</body></html>
