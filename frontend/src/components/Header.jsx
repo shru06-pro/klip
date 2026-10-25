@@ -198,11 +198,6 @@ export default function Header() {
 
         {/* Right controls */}
         <div className="flex items-center gap-2.5">
-          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-canvas border border-border text-xs font-mono text-muted">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
-            <span>API: 99.98% Fast</span>
-          </div>
-
           <button
             onClick={scrollToShorten}
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent-tint text-accent hover:bg-accent hover:text-white transition-all text-xs font-mono font-medium border border-accent/20 cursor-pointer"
