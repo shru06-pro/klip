@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 const navItems = [
   { id: 'shorten', label: 'Shorten' },
@@ -9,34 +9,8 @@ const navItems = [
 
 export default function Header() {
   const [activeNav, setActiveNav] = useState('shorten')
-  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 })
-  const navRefs = useRef({})
-  const isClickScrolling = useRef(false)
-  const scrollTimeoutRef = useRef(null)
-
-  const updatePill = useCallback(() => {
-    const el = navRefs.current[activeNav]
-    if (el) {
-      setPillStyle({
-        left: el.offsetLeft,
-        width: el.offsetWidth,
-        opacity: 1,
-      })
-    }
-  }, [activeNav])
-
-  useLayoutEffect(() => {
-    updatePill()
-  }, [updatePill])
-
-  useEffect(() => {
-    const handleResize = () => updatePill()
-    window.addEventListener('resize', handleResize)
-    if (document.fonts) {
-      document.fonts.ready.then(handleResize)
-    }
-    return () => window.removeEventListener('resize', handleResize)
-  }, [updatePill])
+  const isManualClick = useRef(false)
+  const clickTimeout = useRef(null)
 
   useEffect(() => {
     // Check initial hash on load
@@ -46,87 +20,59 @@ export default function Header() {
     }
 
     const handleScroll = () => {
-      if (isClickScrolling.current) return
+      // Do not override user selection while smooth-scrolling from a click
+      if (isManualClick.current) return
 
-      // Check if user is scrolled near the bottom of the page
-      const isBottom =
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60
+      const scrollPosition = window.scrollY + 160
 
-      const sectionData = navItems
-        .map((item) => {
-          const el = document.getElementById(item.id)
-          if (!el) return null
-          const rect = el.getBoundingClientRect()
-          return {
-            id: item.id,
-            top: rect.top,
-            absoluteTop: rect.top + window.scrollY,
-          }
-        })
-        .filter(Boolean)
+      // If user is scrolled to the very bottom, activate the lowest section
+      const isAtBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 70
 
-      if (sectionData.length === 0) return
-
-      // Sort sections by actual document position from top to bottom
-      sectionData.sort((a, b) => a.absoluteTop - b.absoluteTop)
-
-      if (isBottom) {
-        setActiveNav(sectionData[sectionData.length - 1].id)
+      if (isAtBottom) {
+        setActiveNav('recent')
         return
       }
 
-      // Find section currently in view near the top (top <= 180)
-      let currentId = sectionData[0].id
-      for (let i = 0; i < sectionData.length; i++) {
-        if (sectionData[i].top <= 180) {
-          currentId = sectionData[i].id
+      // Track sections in order of their page position
+      const sections = [
+        { id: 'shorten', el: document.getElementById('shorten') },
+        { id: 'engine', el: document.getElementById('engine') },
+        { id: 'analytics', el: document.getElementById('analytics') },
+        { id: 'recent', el: document.getElementById('recent') },
+      ].filter((s) => s.el !== null)
+
+      let currentSection = 'shorten'
+      for (const section of sections) {
+        if (scrollPosition >= section.el.offsetTop) {
+          currentSection = section.id
         }
       }
-      setActiveNav(currentId)
-    }
 
-    const handlePopState = () => {
-      const currentHash = window.location.hash.replace('#', '')
-      if (currentHash && navItems.some((n) => n.id === currentHash)) {
-        setActiveNav(currentHash)
-      }
-    }
-
-    const handleUserScroll = () => {
-      isClickScrolling.current = false
+      setActiveNav(currentSection)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    window.addEventListener('popstate', handlePopState)
-    window.addEventListener('wheel', handleUserScroll, { passive: true })
-    window.addEventListener('touchmove', handleUserScroll, { passive: true })
-
     return () => {
       window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('popstate', handlePopState)
-      window.removeEventListener('wheel', handleUserScroll)
-      window.removeEventListener('touchmove', handleUserScroll)
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+      if (clickTimeout.current) clearTimeout(clickTimeout.current)
     }
   }, [])
 
-  const handleNavClick = (e, id) => {
-    if (e) e.preventDefault()
+  const handleNavClick = (id) => {
     setActiveNav(id)
+    isManualClick.current = true
+
+    if (clickTimeout.current) clearTimeout(clickTimeout.current)
+    clickTimeout.current = setTimeout(() => {
+      isManualClick.current = false
+    }, 1200)
 
     const el = document.getElementById(id)
     if (el) {
-      // Temporarily lock scroll listener from overriding during smooth scroll
-      isClickScrolling.current = true
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
-
-      scrollTimeoutRef.current = setTimeout(() => {
-        isClickScrolling.current = false
-      }, 900)
-
-      const navOffset = 90
+      const headerOffset = 90
       const elementPosition = el.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset
 
       window.scrollTo({
         top: Math.max(0, offsetPosition),
@@ -136,13 +82,13 @@ export default function Header() {
       window.history.pushState(null, '', `#${id}`)
       if (id === 'shorten') {
         const input = document.getElementById('longUrlInput')
-        if (input) setTimeout(() => input.focus(), 350)
+        if (input) setTimeout(() => input.focus(), 300)
       }
     }
   }
 
-  const scrollToShorten = (e) => {
-    handleNavClick(e, 'shorten')
+  const scrollToShorten = () => {
+    handleNavClick('shorten')
   }
 
   return (
@@ -152,7 +98,10 @@ export default function Header() {
         <a
           className="flex items-center gap-2.5 group cursor-pointer"
           href="#shorten"
-          onClick={(e) => handleNavClick(e, 'shorten')}
+          onClick={(e) => {
+            e.preventDefault()
+            scrollToShorten()
+          }}
         >
           <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-serif text-lg font-bold shadow-sm transition-transform group-hover:scale-105">
             K
@@ -163,33 +112,22 @@ export default function Header() {
         </a>
 
         {/* Middle Navigation with dynamic active pill */}
-        <div className="relative hidden md:flex items-center gap-1.5 p-1 bg-canvas/70 rounded-full border border-border/70 text-sm">
-          {/* Animated sliding pill background */}
-          <span
-            className="absolute top-1 bottom-1 bg-white rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out pointer-events-none"
-            style={{
-              left: `${pillStyle.left}px`,
-              width: `${pillStyle.width}px`,
-              opacity: pillStyle.opacity,
-            }}
-          />
-
+        <div className="hidden md:flex items-center gap-1.5 p-1 bg-canvas/70 rounded-full border border-border/70 text-sm">
           {navItems.map((item) => {
             const isActive = activeNav === item.id
             return (
-              <a
+              <button
                 key={item.id}
-                ref={(el) => (navRefs.current[item.id] = el)}
-                href={`#${item.id}`}
-                onClick={(e) => handleNavClick(e, item.id)}
-                className={`relative z-10 px-4 py-1.5 rounded-full font-medium transition-colors duration-200 cursor-pointer ${
+                type="button"
+                onClick={() => handleNavClick(item.id)}
+                className={`px-4 py-1.5 rounded-full font-medium transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? `text-ink ${pillStyle.opacity === 0 ? 'bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]' : ''}`
+                    ? 'bg-white text-ink shadow-[0_2px_8px_rgba(0,0,0,0.06)]'
                     : 'text-muted hover:text-ink'
                 }`}
               >
                 {item.label}
-              </a>
+              </button>
             )
           })}
         </div>
