@@ -8,8 +8,8 @@ const indexRouter = require('./routes/index')
 // 1. Resolve environment variables with intelligent production defaults
 const PORT = parseInt(process.env.PORT, 10) || 5000
 const BASE_URL = (process.env.BASE_URL || `http://localhost:${PORT}`).trim().replace(/\/+$/, '')
-const rawOrigin = (process.env.FRONTEND_ORIGIN || process.env.CLIENT_ORIGIN || process.env.BASE_URL || '*').trim()
-const allowedOrigins = rawOrigin.split(',').map((o) => o.trim().replace(/\/+$/, ''))
+const CLIENT_ORIGIN = (process.env.FRONTEND_ORIGIN || process.env.CLIENT_ORIGIN || process.env.BASE_URL || '*').trim()
+const allowedOrigins = CLIENT_ORIGIN.split(',').map((o) => o.trim().replace(/\/+$/, ''))
 
 if (!process.env.BASE_URL && process.env.NODE_ENV === 'production') {
   console.warn('WARNING: BASE_URL is not set. Short links will default to http://localhost:' + PORT)
