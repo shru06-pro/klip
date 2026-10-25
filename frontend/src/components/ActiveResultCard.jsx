@@ -1,15 +1,51 @@
+/**
+ * ==============================================================================
+ * FILE: frontend/src/components/ActiveResultCard.jsx
+ * WHAT IT DOES: Renders the active link result card for the most recently created or selected short link:
+ *               1. Displays the generated short URL with a 1-click clipboard copy button.
+ *               2. Generates dynamic, high-resolution QR codes in both PNG (raster) and
+ *                  SVG (vector) formats using the `qrcode` library.
+ *               3. Calculates remaining expiration time countdown (e.g., "29d 23h left").
+ *               4. Provides direct download actions for vector SVG and 4K PNG QR codes.
+ *               5. Displays live click count and SSL protection status.
+ * WHERE IT IS CALLED FROM: Rendered inside `<Main />` (frontend/src/components/Main.jsx)
+ *                          whenever `activeItem` is non-null.
+ * WHOM IT CALLS: QRCode.toDataURL(), QRCode.toString(), navigator.clipboard.writeText(),
+ *                URL.createObjectURL(), downloadPng(), downloadSvg().
+ * WHERE THAT CALL IS GOING: Injects QR images into DOM and triggers file downloads in browser.
+ * ==============================================================================
+ */
+
 import React, { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
 
+/**
+ * COMPONENT: ActiveResultCard({ item })
+ * WHAT IT DOES: Renders the primary result card with real-time QR generation and copy actions.
+ * WHERE IT IS CALLED FROM: Rendered in frontend/src/components/Main.jsx.
+ * WHOM IT CALLS: handleCopy, downloadSvg, downloadPng, getTimeLeft, QRCode utilities.
+ * WHERE THAT CALL IS GOING: Renders active link details and QR card into the DOM.
+ */
 export default function ActiveResultCard({ item }) {
   const [copied, setCopied] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [qrSvgString, setQrSvgString] = useState('')
 
+  /**
+   * SECTION: QR Code Generation Effect
+   * WHAT IT DOES: Generates two representations of the QR code whenever `item.shortUrl` changes:
+   *               1. PNG Data URL (480px width) for real-time display and 4K raster download.
+   *               2. SVG XML vector string for scalable vector graphic export.
+   * WHERE IT IS CALLED FROM: Triggered automatically when `item.shortUrl` updates.
+   * WHOM IT CALLS: QRCode.toDataURL(), QRCode.toString(), setQrDataUrl(), setQrSvgString().
+   * WHERE THAT CALL IS GOING: Asynchronously generates image strings in memory.
+   */
   useEffect(() => {
     if (!item?.shortUrl) return
 
-    // Generate high-resolution PNG Data URL
+    // FUNCTION CALL: QRCode.toDataURL()
+    // - WHAT IT DOES: Renders a QR code matrix into a base64 PNG data URL.
+    // - WHERE THAT CALL IS GOING: Populates `qrDataUrl` state for `<img>` preview and download.
     QRCode.toDataURL(item.shortUrl, {
       width: 480,
       margin: 1.5,
@@ -21,7 +57,9 @@ export default function ActiveResultCard({ item }) {
       .then((url) => setQrDataUrl(url))
       .catch((err) => console.error('QR PNG generation error:', err))
 
-    // Generate SVG string for vector download
+    // FUNCTION CALL: QRCode.toString()
+    // - WHAT IT DOES: Renders a QR code matrix into an SVG vector XML markup string.
+    // - WHERE THAT CALL IS GOING: Populates `qrSvgString` state for vector SVG file download.
     QRCode.toString(item.shortUrl, {
       type: 'svg',
       margin: 1.5,
@@ -36,6 +74,14 @@ export default function ActiveResultCard({ item }) {
 
   if (!item) return null
 
+  /**
+   * FUNCTION: handleCopy()
+   * WHAT IT DOES: Copies the shortened URL to the system clipboard and displays a
+   *               temporary "Copied!" green badge confirmation for 2.4 seconds.
+   * WHERE IT IS CALLED FROM: Click event on `<button id="copyResultBtn">`.
+   * WHOM IT CALLS: navigator.clipboard.writeText(), setCopied().
+   * WHERE THAT CALL IS GOING: Writes string to user operating system clipboard.
+   */
   const handleCopy = () => {
     navigator.clipboard.writeText(item.shortUrl).then(() => {
       setCopied(true)
@@ -43,6 +89,14 @@ export default function ActiveResultCard({ item }) {
     })
   }
 
+  /**
+   * FUNCTION: downloadSvg()
+   * WHAT IT DOES: Packages the generated SVG vector string into an image/svg+xml Blob,
+   *               constructs a transient object URL, and triggers an automatic browser file download.
+   * WHERE IT IS CALLED FROM: Click event on "SVG Vector" button.
+   * WHOM IT CALLS: Blob(), URL.createObjectURL(), document.createElement('a'), URL.revokeObjectURL().
+   * WHERE THAT CALL IS GOING: Prompts browser file system download dialog.
+   */
   const downloadSvg = () => {
     if (!qrSvgString) return
     const blob = new Blob([qrSvgString], { type: 'image/svg+xml' })
@@ -54,6 +108,13 @@ export default function ActiveResultCard({ item }) {
     URL.revokeObjectURL(url)
   }
 
+  /**
+   * FUNCTION: downloadPng()
+   * WHAT IT DOES: Triggers a high-resolution 4K PNG file download using the generated `qrDataUrl`.
+   * WHERE IT IS CALLED FROM: Click event on "PNG 4K" button.
+   * WHOM IT CALLS: document.createElement('a'), a.click().
+   * WHERE THAT CALL IS GOING: Prompts browser file system download dialog for PNG image.
+   */
   const downloadPng = () => {
     if (!qrDataUrl) return
     const a = document.createElement('a')
@@ -62,7 +123,13 @@ export default function ActiveResultCard({ item }) {
     a.click()
   }
 
-  // Calculate honest remaining expiration time
+  /**
+   * FUNCTION: getTimeLeft(expiresAt)
+   * WHAT IT DOES: Calculates the remaining days and hours until the link expires.
+   * WHERE IT IS CALLED FROM: Component render body.
+   * WHOM IT CALLS: Date arithmetic.
+   * WHERE THAT CALL IS GOING: In-memory string return (e.g., '29d 23h left' or 'Expired').
+   */
   const getTimeLeft = (expiresAt) => {
     if (!expiresAt) return null
     const diff = new Date(expiresAt) - new Date()
@@ -129,7 +196,7 @@ export default function ActiveResultCard({ item }) {
             </p>
           </div>
 
-          {/* Honest Micro Badges */}
+          {/* Micro Badges */}
           <div className="flex items-center gap-2 pt-1 flex-wrap">
             <div className="bg-canvas px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-mono text-muted border border-border/80 flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm text-accent">mouse</span>

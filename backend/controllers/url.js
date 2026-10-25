@@ -1,6 +1,27 @@
+/**
+ * ==============================================================================
+ * FILE: backend/controllers/url.js
+ * WHAT IT DOES: Implements all core business logic and database interactions for:
+ *               1. URL format validation & self-referencing loop prevention.
+ *               2. Custom slug validation against reserved system words.
+ *               3. Short link generation and database deduplication.
+ *               4. 302 edge redirection and asynchronous click counter tracking.
+ *               5. Link deletion and statistical query retrieval.
+ * WHERE IT IS CALLED FROM: Invoked by route handlers in backend/routes/index.js.
+ * WHOM IT CALLS: nanoid(), getDB() (from ../db.js), PostgreSQL queries via db.query().
+ * WHERE THAT CALL IS GOING: Directly queries and updates the `urls` PostgreSQL table,
+ *                           and delivers HTTP responses / browser redirects to clients.
+ * ==============================================================================
+ */
+
 const { nanoid } = require('nanoid')
 const { getDB } = require('../db')
 
+/**
+ * SECTION: Reserved System Keywords
+ * WHAT IT DOES: Prevents users from registering short slugs that collide with
+ *               system endpoints, assets, or administrative routes.
+ */
 const RESERVED_WORDS = new Set([
   'api',
   'health',
@@ -14,6 +35,17 @@ const RESERVED_WORDS = new Set([
   'test',
 ])
 
+/**
+ * FUNCTION: validateUrl(value, baseUrl)
+ * WHAT IT DOES: Validates the target URL string for:
+ *               - Non-empty string constraint & 2048-character length limit.
+ *               - Valid RFC 3986 URI format via standard URL parser.
+ *               - HTTP and HTTPS protocol compliance.
+ *               - Loop prevention (prevents shortening links that point to itself).
+ * WHERE IT IS CALLED FROM: Called inside createShortUrl() before database operations.
+ * WHOM IT CALLS: new URL(value), new URL(baseUrl).
+ * WHERE THAT CALL IS GOING: In-memory validation logic returning { valid: boolean, error?: string }.
+ */
 function validateUrl(value, baseUrl) {
   if (!value || typeof value !== 'string') {
     return { valid: false, error: 'URL must be a non-empty string' }
@@ -46,6 +78,16 @@ function validateUrl(value, baseUrl) {
   return { valid: true }
 }
 
+/**
+ * FUNCTION: validateSlug(slug)
+ * WHAT IT DOES: Validates user-provided custom slugs for:
+ *               - Length boundaries (between 3 and 50 characters).
+ *               - Alphanumeric, hyphen, and underscore characters only (regex).
+ *               - Non-collision against the RESERVED_WORDS blacklist.
+ * WHERE IT IS CALLED FROM: Called inside createShortUrl() when a custom slug is provided.
+ * WHOM IT CALLS: RegExp.test(), RESERVED_WORDS.has().
+ * WHERE THAT CALL IS GOING: In-memory string check returning { valid: boolean, slug?: string, error?: string }.
+ */
 function validateSlug(slug) {
   if (!slug || typeof slug !== 'string') {
     return { valid: false, error: 'Custom slug must be a string' }
@@ -67,6 +109,19 @@ function validateSlug(slug) {
   return { valid: true, slug: trimmed }
 }
 
+/**
+ * FUNCTION: createShortUrl(req, res)
+ * WHAT IT DOES: Orchestrates short link creation:
+ *               1. Validates destination URL via validateUrl().
+ *               2. If custom slug provided, validates via validateSlug() and checks uniqueness.
+ *               3. If no custom slug, checks for existing active duplicate URL to reuse,
+ *                  otherwise generates a collision-free 6-character nanoid code.
+ *               4. Computes 30-day expiration timestamp if autoExpire is selected.
+ *               5. Inserts record into PostgreSQL `urls` table.
+ * WHERE IT IS CALLED FROM: POST /api/shorten and POST /api/urls (backend/routes/index.js).
+ * WHOM IT CALLS: validateUrl(), validateSlug(), getDB(), db.query(), nanoid().
+ * WHERE THAT CALL IS GOING: Queries and inserts into PostgreSQL database, returning HTTP 201/200 JSON.
+ */
 async function createShortUrl(req, res) {
   const { url, slug, autoExpire } = req.body
   const baseUrl = process.env.BASE_URL
@@ -89,13 +144,15 @@ async function createShortUrl(req, res) {
       }
       shortCode = slugCheck.slug
 
-      // Check if custom slug already exists
+      // FUNCTION CALL: db.query()
+      // - WHAT IT DOES: Checks if custom slug is already claimed in database.
+      // - WHERE THAT CALL IS GOING: PostgreSQL `urls` table.
       const existing = await db.query('SELECT id FROM urls WHERE short_code = $1', [shortCode])
       if (existing.rows.length > 0) {
         return res.status(409).json({ message: `Custom slug '${shortCode}' is already in use` })
       }
     } else {
-      // 3. Deduplication for automatic slugs if identical URL already exists and is not expired
+      // 3. Deduplication: Check if identical valid URL already exists
       const existingUrl = await db.query(
         'SELECT * FROM urls WHERE original_url = $1 AND (expires_at IS NULL OR expires_at > NOW()) ORDER BY id DESC LIMIT 1',
         [url.trim()]
@@ -130,7 +187,7 @@ async function createShortUrl(req, res) {
       expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     }
 
-    // 5. Insert into PostgreSQL database
+    // 5. Insert new link record into PostgreSQL
     const insertRes = await db.query(
       `INSERT INTO urls (short_code, original_url, clicks, expires_at, created_at)
        VALUES ($1, $2, 0, $3, NOW())
@@ -154,6 +211,15 @@ async function createShortUrl(req, res) {
   }
 }
 
+/**
+ * FUNCTION: redirectToOriginalUrl(req, res)
+ * WHAT IT DOES: Resolves short code from incoming URL params, checks expiration,
+ *               increments click counter in the database, and issues an HTTP 302 redirect.
+ * WHERE IT IS CALLED FROM: GET /:code route in backend/routes/index.js.
+ * WHOM IT CALLS: getDB(), db.query(), getNotFoundHtml(), getExpiredHtml(), res.redirect().
+ * WHERE THAT CALL IS GOING: Queries PostgreSQL `urls`, writes click increment to DB,
+ *                           and instructs browser to navigate to destination website.
+ */
 async function redirectToOriginalUrl(req, res) {
   const code = req.params.code || req.params.shortUrlId
   if (!code) {
@@ -166,6 +232,9 @@ async function redirectToOriginalUrl(req, res) {
 
   const db = getDB()
   try {
+    // FUNCTION CALL: db.query()
+    // - WHAT IT DOES: Retrieves target destination URL by short_code.
+    // - WHERE THAT CALL IS GOING: PostgreSQL `urls` table.
     const result = await db.query('SELECT * FROM urls WHERE short_code = $1', [code])
     if (result.rows.length === 0) {
       return res.status(404).send(getNotFoundHtml())
@@ -173,15 +242,17 @@ async function redirectToOriginalUrl(req, res) {
 
     const row = result.rows[0]
 
-    // Check expiration
+    // Check expiration timestamp
     if (row.expires_at && new Date() > new Date(row.expires_at)) {
       return res.status(410).send(getExpiredHtml(row.short_code))
     }
 
-    // Increment click count asynchronously in PostgreSQL
+    // FUNCTION CALL: db.query()
+    // - WHAT IT DOES: Increments click count in PostgreSQL asynchronously.
+    // - WHERE THAT CALL IS GOING: PostgreSQL `urls` table.
     await db.query('UPDATE urls SET clicks = clicks + 1 WHERE id = $1', [row.id])
 
-    // Respond with 302 redirect
+    // Respond with 302 redirect to original destination
     return res.redirect(302, row.original_url)
   } catch (err) {
     console.error('Error in redirectToOriginalUrl:', err)
@@ -189,6 +260,13 @@ async function redirectToOriginalUrl(req, res) {
   }
 }
 
+/**
+ * FUNCTION: deleteUrl(req, res)
+ * WHAT IT DOES: Permanently deletes a link record by matching its original_url or short_code.
+ * WHERE IT IS CALLED FROM: DELETE /api/urls route in backend/routes/index.js.
+ * WHOM IT CALLS: getDB(), db.query().
+ * WHERE THAT CALL IS GOING: PostgreSQL `urls` table DELETE statement.
+ */
 async function deleteUrl(req, res) {
   const { url, shortCode } = req.body
   const target = url || shortCode
@@ -214,6 +292,13 @@ async function deleteUrl(req, res) {
   }
 }
 
+/**
+ * FUNCTION: getUrlStats(req, res)
+ * WHAT IT DOES: Fetches click analytics, expiration, and creation timestamps for a short code.
+ * WHERE IT IS CALLED FROM: GET /api/urls/:code route in backend/routes/index.js.
+ * WHOM IT CALLS: getDB(), db.query().
+ * WHERE THAT CALL IS GOING: PostgreSQL `urls` table SELECT query, returning JSON metrics.
+ */
 async function getUrlStats(req, res) {
   const code = req.params.code
   const db = getDB()
@@ -236,6 +321,14 @@ async function getUrlStats(req, res) {
   }
 }
 
+/**
+ * FUNCTION: getNotFoundHtml()
+ * WHAT IT DOES: Generates a styled, branded HTML document displayed when a visitor
+ *               navigates to a non-existent short link.
+ * WHERE IT IS CALLED FROM: Called inside redirectToOriginalUrl() when code is not found.
+ * WHOM IT CALLS: String template renderer.
+ * WHERE THAT CALL IS GOING: Direct HTTP 404 response payload sent to the client browser.
+ */
 function getNotFoundHtml() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -261,6 +354,14 @@ function getNotFoundHtml() {
 </html>`
 }
 
+/**
+ * FUNCTION: getExpiredHtml(code)
+ * WHAT IT DOES: Generates a styled HTML document informing visitors that the requested
+ *               shortened link has expired per its retention policy (e.g., 30-day link).
+ * WHERE IT IS CALLED FROM: Called inside redirectToOriginalUrl() when now > expires_at.
+ * WHOM IT CALLS: String template renderer.
+ * WHERE THAT CALL IS GOING: Direct HTTP 410 Gone response payload sent to the client browser.
+ */
 function getExpiredHtml(code) {
   return `<!DOCTYPE html>
 <html lang="en">

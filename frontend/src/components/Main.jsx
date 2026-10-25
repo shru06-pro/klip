@@ -1,3 +1,20 @@
+/**
+ * ==============================================================================
+ * FILE: frontend/src/components/Main.jsx
+ * WHAT IT DOES: Central state manager and presentation coordinator for the application.
+ *               1. Loads and persists link history in localStorage.
+ *               2. Synchronizes real-time click counts and expiration dates with the
+ *                  PostgreSQL backend on mount via GET /api/urls/:code.
+ *               3. Coordinates workflow between Shortener, ActiveResultCard, UrlList,
+ *                  BentoFeatures, QrModal, and Footer components.
+ *               4. Issues DELETE requests to the backend when links are removed.
+ * WHERE IT IS CALLED FROM: Rendered inside `<App />` (frontend/src/App.js).
+ * WHOM IT CALLS: Hero, Shortener, ActiveResultCard, BentoFeatures, UrlList, QrModal, Footer,
+ *                fetch(`${API_URL}/api/urls/...`), localStorage.
+ * WHERE THAT CALL IS GOING: Coordinates client component lifecycle and communicates with backend API.
+ * ==============================================================================
+ */
+
 import React, { useState, useEffect } from 'react'
 import Hero from './Hero'
 import Shortener from './Shortener'
@@ -8,6 +25,14 @@ import QrModal from './QrModal'
 import Footer from './Footer'
 import { API_URL } from '../config'
 
+/**
+ * FUNCTION: getLocalStorage()
+ * WHAT IT DOES: Safely parses and retrieves the saved links array from browser localStorage.
+ *               Provides fallback to an empty array in case of corruption or SSR.
+ * WHERE IT IS CALLED FROM: Initial state initializer in Main().
+ * WHOM IT CALLS: localStorage.getItem('links'), JSON.parse().
+ * WHERE THAT CALL IS GOING: In-memory array return of previously saved link objects.
+ */
 const getLocalStorage = () => {
   try {
     const raw = localStorage.getItem('links')
@@ -19,6 +44,13 @@ const getLocalStorage = () => {
   }
 }
 
+/**
+ * COMPONENT: Main()
+ * WHAT IT DOES: Core container orchestrating link creation, active preview, metrics sync, and modal displays.
+ * WHERE IT IS CALLED FROM: Rendered in frontend/src/App.js.
+ * WHOM IT CALLS: useState, useEffect, fetch(), localStorage.setItem(), child components.
+ * WHERE THAT CALL IS GOING: DOM tree rendering and backend synchronization.
+ */
 export default function Main() {
   const [links, setLinks] = useState(getLocalStorage)
   const [activeItem, setActiveItem] = useState(() => {
@@ -27,11 +59,26 @@ export default function Main() {
   })
   const [qrModalItem, setQrModalItem] = useState(null)
 
+  /**
+   * SECTION: LocalStorage Persistence Effect
+   * WHAT IT DOES: Serializes the `links` state array to localStorage whenever it changes.
+   * WHERE IT IS CALLED FROM: Automatically executed when `links` dependency updates.
+   * WHOM IT CALLS: localStorage.setItem('links', JSON.stringify(links)).
+   * WHERE THAT CALL IS GOING: Browser persistent storage.
+   */
   useEffect(() => {
     localStorage.setItem('links', JSON.stringify(links))
   }, [links])
 
-  // Refresh clicks from the database for links in the ledger
+  /**
+   * SECTION: Database Click Metrics Sync Hook
+   * WHAT IT DOES: Asynchronously iterates over all saved links on mount, querying the
+   *               backend GET /api/urls/:code to synchronize click counts and expiration
+   *               status against the authoritative PostgreSQL database.
+   * WHERE IT IS CALLED FROM: Runs once on component mount.
+   * WHOM IT CALLS: fetch(`${API_URL}/api/urls/${code}`), setLinks(), setActiveItem().
+   * WHERE THAT CALL IS GOING: HTTP GET requests to backend router (backend/routes/index.js).
+   */
   useEffect(() => {
     if (!API_URL || links.length === 0) return
 
@@ -42,6 +89,9 @@ export default function Main() {
             const code = item.shortCode || item.shortUrl?.split('/').pop()
             if (!code) return item
             try {
+              // FUNCTION CALL: fetch(`${API_URL}/api/urls/${code}`)
+              // - WHAT IT DOES: Retrieves click analytics for a specific shortcode.
+              // - WHERE THAT CALL IS GOING: Backend GET /api/urls/:code.
               const res = await fetch(`${API_URL}/api/urls/${code}`)
               if (res.ok) {
                 const data = await res.json()
@@ -67,19 +117,40 @@ export default function Main() {
       }
     }
 
+    // FUNCTION CALL: syncClicks()
+    // Initiates parallel synchronization of click metrics.
     syncClicks()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Runs once on mount to synchronize click counts with PostgreSQL
+  }, [])
 
+  /**
+   * FUNCTION: addLink(newItem)
+   * WHAT IT DOES: Adds a newly generated short link to the top of the history list,
+   *               deduplicates existing entries, and designates it as activeItem.
+   * WHERE IT IS CALLED FROM: Passed as `onUrlCreated` callback to <Shortener />.
+   * WHOM IT CALLS: setActiveItem(newItem), setLinks([newItem, ...filtered]).
+   * WHERE THAT CALL IS GOING: Updates React component state, triggering re-render and localStorage save.
+   */
   const addLink = (newItem) => {
     setActiveItem(newItem)
     const filtered = links.filter((l) => l.url !== newItem.url && l.shortUrl !== newItem.shortUrl)
     setLinks([newItem, ...filtered])
   }
 
+  /**
+   * FUNCTION: deleteLink(url, shortCode)
+   * WHAT IT DOES: Issues an asynchronous HTTP DELETE request to the backend to remove
+   *               the link record from PostgreSQL, then filters it out of local state.
+   * WHERE IT IS CALLED FROM: Passed as `onDelete` callback to <UrlList />.
+   * WHOM IT CALLS: fetch(`${API_URL}/api/urls`, { method: 'DELETE' }), setLinks(), setActiveItem().
+   * WHERE THAT CALL IS GOING: Backend DELETE /api/urls endpoint and local React state.
+   */
   const deleteLink = async (url, shortCode) => {
     try {
       if (API_URL) {
+        // FUNCTION CALL: fetch()
+        // - WHAT IT DOES: Sends DELETE payload with URL or shortCode.
+        // - WHERE THAT CALL IS GOING: Backend DELETE /api/urls.
         await fetch(`${API_URL}/api/urls`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
@@ -97,6 +168,13 @@ export default function Main() {
     }
   }
 
+  /**
+   * FUNCTION: hideLinks()
+   * WHAT IT DOES: Clears all link entries from local state and resets active link preview.
+   * WHERE IT IS CALLED FROM: Passed as `onClearAll` callback to <UrlList />.
+   * WHOM IT CALLS: setLinks([]), setActiveItem(null).
+   * WHERE THAT CALL IS GOING: Resets component state and empties localStorage.
+   */
   const hideLinks = () => {
     setLinks([])
     setActiveItem(null)
@@ -104,23 +182,23 @@ export default function Main() {
 
   return (
     <main className="relative w-full overflow-hidden bg-canvas min-h-screen">
-      {/* Ambient Lavender Glow Blobs */}
+      {/* Ambient Lavender Glow Background */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[720px] h-[440px] bg-accent-soft/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
       <div className="absolute top-96 left-1/4 w-80 h-80 bg-accent-tint/60 rounded-full blur-2xl pointer-events-none -z-10"></div>
 
-      {/* 1. HERO SECTION */}
+      {/* SECTION 1: HERO */}
       <Hero />
 
-      {/* 2. THE SHORTEN FORM (MAIN CTA) */}
+      {/* SECTION 2: URL SHORTENER FORM (onUrlCreated calls addLink) */}
       <Shortener onUrlCreated={addLink} />
 
-      {/* 3. ACTIVE / GENERATED RESULT CARD WITH REAL QR CODE */}
+      {/* SECTION 3: ACTIVE LINK RESULT CARD WITH REAL-TIME QR */}
       {activeItem && <ActiveResultCard item={activeItem} />}
 
-      {/* 4. EDITORIAL BENTO / FEATURES SUITE */}
+      {/* SECTION 4: ENGINE SUITE FEATURES GRID */}
       <BentoFeatures />
 
-      {/* 5. RECENT KLIPS ARCHIVE TABLE / LEDGER */}
+      {/* SECTION 5: RECENT LINKS LEDGER */}
       <UrlList
         urlList={links}
         onDelete={(url, shortCode) => deleteLink(url, shortCode)}
@@ -128,12 +206,12 @@ export default function Main() {
         onClearAll={hideLinks}
       />
 
-      {/* QR Code Modal for viewing & downloading any link's QR */}
+      {/* POPUP MODAL: High-Resolution QR Inspector */}
       {qrModalItem && (
         <QrModal item={qrModalItem} onClose={() => setQrModalItem(null)} />
       )}
 
-      {/* Minimal Muted Footer */}
+      {/* FOOTER */}
       <Footer />
     </main>
   )

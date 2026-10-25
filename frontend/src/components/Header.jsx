@@ -1,3 +1,18 @@
+/**
+ * ==============================================================================
+ * FILE: frontend/src/components/Header.jsx
+ * WHAT IT DOES: Renders the sticky top navigation header for the web application.
+ *               1. Brand monogram lockup with clean paperclip-K icon.
+ *               2. Desktop navigation pill bar featuring an animated sliding indicator
+ *                  that tracks active sections based on user clicks and window scroll position.
+ *               3. Mobile responsive navigation drawer with full touch support.
+ *               4. Smooth scroll routing to `#shorten`, `#engine`, and `#recent` page anchors.
+ * WHERE IT IS CALLED FROM: Rendered at the top of `<App />` (frontend/src/App.js).
+ * WHOM IT CALLS: window.scrollTo(), window.addEventListener(), updatePill(), handleNavClick().
+ * WHERE THAT CALL IS GOING: Manipulates browser window scroll position and visual pill styles.
+ * ==============================================================================
+ */
+
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import logoIcon from '../images/logo-icon.png'
 
@@ -7,6 +22,13 @@ const navItems = [
   { id: 'recent', label: 'Recent Links' },
 ]
 
+/**
+ * COMPONENT: Header()
+ * WHAT IT DOES: Main header component with scroll spy, dynamic sliding pill, and mobile drawer.
+ * WHERE IT IS CALLED FROM: Rendered in frontend/src/App.js.
+ * WHOM IT CALLS: useCallback, useLayoutEffect, useEffect, window.addEventListener, window.scrollTo.
+ * WHERE THAT CALL IS GOING: Sticky navigation overlay pinned at the top of the viewport.
+ */
 export default function Header() {
   const [activeNav, setActiveNav] = useState('shorten')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -16,6 +38,13 @@ export default function Header() {
   const isManualClick = useRef(false)
   const clickTimeout = useRef(null)
 
+  /**
+   * SECTION: Mobile Outside Click Handler
+   * WHAT IT DOES: Closes the mobile dropdown drawer if the user taps outside the `<header>` element.
+   * WHERE IT IS CALLED FROM: Window 'click' event listener.
+   * WHOM IT CALLS: setMobileMenuOpen(false).
+   * WHERE THAT CALL IS GOING: Updates local state to close mobile drawer.
+   */
   useEffect(() => {
     if (!mobileMenuOpen) return
     const handleOutsideClick = (e) => {
@@ -27,6 +56,15 @@ export default function Header() {
     return () => window.removeEventListener('click', handleOutsideClick)
   }, [mobileMenuOpen])
 
+  /**
+   * FUNCTION: updatePill(navId)
+   * WHAT IT DOES: Measures the DOM dimensions (`offsetLeft` and `offsetWidth`) of the
+   *               currently active navigation button and updates `pillStyle` state to
+   *               smoothly animate the white pill capsule behind the active label.
+   * WHERE IT IS CALLED FROM: Called on mount, layout changes, activeNav updates, and window resize.
+   * WHOM IT CALLS: navRefs.current[navId].offsetLeft/offsetWidth, setPillStyle().
+   * WHERE THAT CALL IS GOING: Updates CSS transform/geometry of sliding span indicator.
+   */
   const updatePill = useCallback((navId = activeNav) => {
     const el = navRefs.current[navId]
     if (el) {
@@ -42,6 +80,14 @@ export default function Header() {
     updatePill(activeNav)
   }, [activeNav, updatePill])
 
+  /**
+   * SECTION: Window Resize & Font Readiness Listener
+   * WHAT IT DOES: Re-calculates pill bounds whenever the window is resized or custom
+   *               web fonts finish loading, avoiding visual misalignment.
+   * WHERE IT IS CALLED FROM: Mount effect.
+   * WHOM IT CALLS: window.addEventListener('resize'), document.fonts.ready.then(), updatePill().
+   * WHERE THAT CALL IS GOING: Re-aligns pill indicator on screen geometry changes.
+   */
   useEffect(() => {
     const handleResize = () => updatePill(activeNav)
     window.addEventListener('resize', handleResize)
@@ -55,15 +101,23 @@ export default function Header() {
     }
   }, [activeNav, updatePill])
 
+  /**
+   * SECTION: Scroll Spy Hook
+   * WHAT IT DOES: Listens to window scroll events to detect which section (#shorten,
+   *               #engine, #recent) is currently active in the viewport, shifting the
+   *               navigation pill indicator automatically as the user scrolls.
+   * WHERE IT IS CALLED FROM: Mount effect.
+   * WHOM IT CALLS: window.addEventListener('scroll'), document.getElementById(), setActiveNav().
+   * WHERE THAT CALL IS GOING: Synchronizes active navigation state with document scroll offset.
+   */
   useEffect(() => {
-    // Check initial hash on load
     const hash = window.location.hash.replace('#', '')
     if (hash && navItems.some((n) => n.id === hash)) {
       setActiveNav(hash)
     }
 
     const handleScroll = () => {
-      // Do not override user selection while smooth-scrolling from a click
+      // Do not override user selection while smooth-scrolling from an explicit click
       if (isManualClick.current) return
 
       const scrollY = window.scrollY
@@ -120,6 +174,17 @@ export default function Header() {
     }
   }, [])
 
+  /**
+   * FUNCTION: handleNavClick(id)
+   * WHAT IT DOES: Handles user click on a navigation item:
+   *               1. Updates active navigation state and animates the indicator pill.
+   *               2. Flags manual click to temporarily suspend the scroll spy.
+   *               3. Performs smooth window scrolling to the targeted element offset.
+   *               4. Focuses the long URL input if 'shorten' is clicked.
+   * WHERE IT IS CALLED FROM: Click event on desktop nav buttons or mobile menu items.
+   * WHOM IT CALLS: setActiveNav(), updatePill(), window.scrollTo(), window.history.pushState().
+   * WHERE THAT CALL IS GOING: Scrolls window to anchor element and updates URL hash.
+   */
   const handleNavClick = (id) => {
     setActiveNav(id)
     updatePill(id)
@@ -136,6 +201,9 @@ export default function Header() {
       const elementPosition = el.getBoundingClientRect().top
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset
 
+      // FUNCTION CALL: window.scrollTo()
+      // - WHAT IT DOES: Smoothly scrolls viewport to designated section.
+      // - WHERE THAT CALL IS GOING: Browser window viewport.
       window.scrollTo({
         top: Math.max(0, offsetPosition),
         behavior: 'smooth',
@@ -149,6 +217,13 @@ export default function Header() {
     }
   }
 
+  /**
+   * FUNCTION: scrollToShorten()
+   * WHAT IT DOES: Convenience wrapper that scrolls directly to the shortener form.
+   * WHERE IT IS CALLED FROM: Brand logo click or "New Link +" button click.
+   * WHOM IT CALLS: handleNavClick('shorten').
+   * WHERE THAT CALL IS GOING: Triggers handleNavClick with id='shorten'.
+   */
   const scrollToShorten = () => {
     handleNavClick('shorten')
   }
@@ -245,7 +320,7 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile dropdown menu drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden max-w-5xl mx-auto mt-2 p-2.5 bg-white/95 backdrop-blur-md rounded-2xl border border-border shadow-[0_14px_35px_rgba(39,39,42,0.12)] flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
           {navItems.map((item) => {

@@ -1,9 +1,41 @@
+/**
+ * ==============================================================================
+ * FILE: frontend/src/components/UrlList.jsx
+ * WHAT IT DOES: Renders the "Recent Active Klips" link ledger table:
+ *               1. Filters links by status ('All', 'Active', 'Expiring Soon').
+ *               2. Displays real-time click metrics alongside mini SVG velocity sparklines.
+ *               3. Provides 1-click clipboard copy with visual feedback per row.
+ *               4. Triggers QR inspection modal on selection via `onSelectQr(item)`.
+ *               5. Dispatches link deletion actions to `onDelete(url, shortCode)`.
+ *               6. Offers a "Clear all saved links" action via `onClearAll()`.
+ * WHERE IT IS CALLED FROM: Rendered inside `<Main />` (frontend/src/components/Main.jsx)
+ *                          with anchor id="recent".
+ * WHOM IT CALLS: navigator.clipboard.writeText(), props.onDelete(), props.onSelectQr(), props.onClearAll().
+ * WHERE THAT CALL IS GOING: Triggers callbacks in frontend/src/components/Main.jsx for DB deletion & modal popups.
+ * ==============================================================================
+ */
+
 import React, { useState } from 'react'
 
+/**
+ * COMPONENT: UrlList({ urlList, onDelete, onSelectQr, onClearAll })
+ * WHAT IT DOES: Manages display, filtering, copying, and removal of user link history.
+ * WHERE IT IS CALLED FROM: Rendered in frontend/src/components/Main.jsx.
+ * WHOM IT CALLS: handleCopy, onDelete, onSelectQr, onClearAll.
+ * WHERE THAT CALL IS GOING: DOM rendering and parent state modification callbacks.
+ */
 export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll }) {
   const [copiedIndex, setCopiedIndex] = useState(null)
   const [filter, setFilter] = useState('all')
 
+  /**
+   * FUNCTION: handleCopy(shortUrl, index)
+   * WHAT IT DOES: Copies the selected row's short URL to the clipboard and marks
+   *               `copiedIndex` to show a green checkmark icon for 2 seconds.
+   * WHERE IT IS CALLED FROM: Click event on row copy button.
+   * WHOM IT CALLS: navigator.clipboard.writeText(), setCopiedIndex().
+   * WHERE THAT CALL IS GOING: Writes string to system clipboard.
+   */
   const handleCopy = (shortUrl, index) => {
     navigator.clipboard.writeText(shortUrl).then(() => {
       setCopiedIndex(index)
@@ -11,6 +43,16 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
     })
   }
 
+  /**
+   * SECTION: Link Filter Pipeline
+   * WHAT IT DOES: Filters the links list according to active filter:
+   *               - 'all': returns all links.
+   *               - 'active': returns links with no expiration or expiration in the future.
+   *               - 'expiring': returns links expiring within the next 7 days.
+   * WHERE IT IS CALLED FROM: Recomputed on every render.
+   * WHOM IT CALLS: Array.prototype.filter().
+   * WHERE THAT CALL IS GOING: In-memory filtered array rendered into the table.
+   */
   const filteredList = urlList.filter((item) => {
     if (filter === 'active') {
       return !item.expires_at || new Date(item.expires_at) > new Date()
@@ -25,6 +67,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
 
   return (
     <section className="max-w-5xl mx-auto px-4 mb-24" id="recent">
+      {/* Header & Filter Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 gap-3">
         <div>
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
@@ -73,6 +116,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
         </div>
       </div>
 
+      {/* Empty State */}
       {filteredList.length === 0 ? (
         <div className="bg-white rounded-2xl p-6 sm:p-10 border border-border text-center shadow-xs">
           <p className="font-serif text-2xl text-ink mb-2">No links recorded yet</p>
@@ -81,6 +125,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
           </p>
         </div>
       ) : (
+        /* Links List */
         <div className="space-y-3">
           {filteredList.map((item, index) => {
             const isCopied = copiedIndex === index
@@ -93,6 +138,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
                 key={item.shortUrl + index}
                 className="bg-white hover:-translate-y-0.5 p-3.5 sm:p-5 rounded-2xl border border-border transition-all shadow-[0_4px_20px_-4px_rgba(39,39,42,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4"
               >
+                {/* Left: URLs & Status Badges */}
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
                     <a
@@ -124,6 +170,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
                   </div>
                 </div>
 
+                {/* Right: Clicks Sparkline & Action Buttons */}
                 <div className="flex items-center gap-4 sm:gap-6 shrink-0 flex-wrap justify-between md:justify-end w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-border/50">
                   <div className="flex items-center gap-3">
                     <div className="text-right">
@@ -132,6 +179,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
                       </div>
                       <div className="font-mono text-[11px] text-muted">Clicks</div>
                     </div>
+                    {/* Velocity Sparkline SVG */}
                     <svg className="w-16 h-6 text-accent" fill="none" viewBox="0 0 80 30">
                       <path
                         d="M0 24 L16 20 L32 26 L48 10 L64 16 L80 4"
@@ -143,8 +191,9 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
                     </svg>
                   </div>
 
-                  {/* Action buttons */}
+                  {/* Actions: Copy, QR modal, Delete */}
                   <div className="flex items-center gap-1.5">
+                    {/* Copy Link Button */}
                     <button
                       type="button"
                       onClick={() => handleCopy(item.shortUrl, index)}
@@ -160,6 +209,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
                       </span>
                     </button>
 
+                    {/* View QR Code Button */}
                     <button
                       type="button"
                       onClick={() => onSelectQr && onSelectQr(item)}
@@ -169,6 +219,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
                       <span className="material-symbols-outlined text-base">qr_code</span>
                     </button>
 
+                    {/* Delete Link Button */}
                     <button
                       type="button"
                       onClick={() => onDelete && onDelete(item.url, item.shortCode)}
@@ -185,6 +236,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
         </div>
       )}
 
+      {/* Clear All Saved Links Button */}
       {urlList.length > 0 && (
         <div className="flex justify-center mt-6">
           <button
