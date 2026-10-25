@@ -78,7 +78,7 @@ export default function ActiveResultCard({ item }) {
 
   return (
     <section className="max-w-3xl mx-auto px-4 mt-8 mb-16" id="resultCard">
-      <div className="rounded-3xl bg-white border border-border shadow-[0_10px_35px_-10px_rgba(39,39,42,0.06)] p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 transition-transform">
+      <div className="rounded-2xl sm:rounded-3xl bg-white border border-border shadow-[0_10px_35px_-10px_rgba(39,39,42,0.06)] p-5 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 transition-transform">
         {/* Left Side: Result Details */}
         <div className="flex-1 w-full space-y-4">
           <div className="flex items-center gap-2 flex-wrap">
@@ -94,13 +94,13 @@ export default function ActiveResultCard({ item }) {
             <div className="font-mono text-xs uppercase tracking-wider text-muted mb-1">
               Shortened URL
             </div>
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
               <a
                 id="activeShortLink"
                 href={item.shortUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-serif text-3xl sm:text-4xl text-ink font-normal hover:text-accent transition-colors tracking-tight"
+                className="font-serif text-2xl sm:text-3xl md:text-4xl text-ink font-normal hover:text-accent transition-colors tracking-tight break-all"
               >
                 {displayUrl}
               </a>
@@ -109,7 +109,7 @@ export default function ActiveResultCard({ item }) {
                 id="copyResultBtn"
                 type="button"
                 onClick={handleCopy}
-                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-mono font-medium transition-all active:scale-95 shadow-sm border cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-mono font-medium transition-all active:scale-95 shadow-sm border cursor-pointer shrink-0 ${
                   copied
                     ? 'bg-success/15 text-success border-success/30'
                     : 'bg-canvas hover:bg-accent-tint text-ink hover:text-accent border-border'
@@ -122,7 +122,7 @@ export default function ActiveResultCard({ item }) {
               </button>
             </div>
 
-            <p className="text-xs text-muted font-sans truncate max-w-md pt-2">
+            <p className="text-xs text-muted font-sans break-all sm:truncate max-w-md pt-2">
               Original: <span className="text-ink font-normal">{item.url}</span>
             </p>
           </div>

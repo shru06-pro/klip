@@ -36,10 +36,10 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
         </div>
 
         {/* Filter Pills Bar */}
-        <div className="inline-flex items-center gap-1 p-1 bg-white border border-border rounded-full text-xs font-mono shadow-sm self-start sm:self-auto">
+        <div className="inline-flex items-center gap-1 p-1 bg-white border border-border rounded-full text-xs font-mono shadow-sm self-start sm:self-auto max-w-full overflow-x-auto">
           <button
             onClick={() => setFilter('all')}
-            className={`px-3.5 py-1 rounded-full transition-colors cursor-pointer ${
+            className={`px-3 sm:px-3.5 py-1 rounded-full transition-colors cursor-pointer shrink-0 ${
               filter === 'all'
                 ? 'bg-accent-tint text-accent font-medium'
                 : 'text-muted hover:text-ink'
@@ -50,7 +50,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
           </button>
           <button
             onClick={() => setFilter('active')}
-            className={`px-3 py-1 rounded-full transition-colors cursor-pointer ${
+            className={`px-3 sm:px-3.5 py-1 rounded-full transition-colors cursor-pointer shrink-0 ${
               filter === 'active'
                 ? 'bg-accent-tint text-accent font-medium'
                 : 'text-muted hover:text-ink'
@@ -61,7 +61,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
           </button>
           <button
             onClick={() => setFilter('expiring')}
-            className={`px-3 py-1 rounded-full transition-colors cursor-pointer ${
+            className={`px-3 sm:px-3.5 py-1 rounded-full transition-colors cursor-pointer shrink-0 ${
               filter === 'expiring'
                 ? 'bg-accent-tint text-accent font-medium'
                 : 'text-muted hover:text-ink'
@@ -74,7 +74,7 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
       </div>
 
       {filteredList.length === 0 ? (
-        <div className="bg-white rounded-2xl p-10 border border-border text-center shadow-xs">
+        <div className="bg-white rounded-2xl p-6 sm:p-10 border border-border text-center shadow-xs">
           <p className="font-serif text-2xl text-ink mb-2">No links recorded yet</p>
           <p className="text-muted text-sm font-sans">
             Paste a URL above and click "Klip It" to generate your first tiny link and QR code.
@@ -91,15 +91,15 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
             return (
               <div
                 key={item.shortUrl + index}
-                className="bg-white hover:-translate-y-0.5 p-4 sm:p-5 rounded-2xl border border-border transition-all shadow-[0_4px_20px_-4px_rgba(39,39,42,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-white hover:-translate-y-0.5 p-3.5 sm:p-5 rounded-2xl border border-border transition-all shadow-[0_4px_20px_-4px_rgba(39,39,42,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4"
               >
                 <div className="space-y-1 min-w-0 flex-1">
-                  <div className="flex items-center gap-2.5 flex-wrap">
+                  <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
                     <a
                       href={item.shortUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-base font-medium text-accent hover:underline"
+                      className="font-mono text-sm sm:text-base font-medium text-accent hover:underline break-all"
                     >
                       {displayShort}
                     </a>
@@ -119,12 +119,12 @@ export default function UrlList({ urlList = [], onDelete, onSelectQr, onClearAll
                     )}
                   </div>
 
-                  <div className="text-xs text-muted font-sans truncate max-w-lg" title={item.url}>
+                  <div className="text-xs text-muted font-sans break-all sm:truncate max-w-lg" title={item.url}>
                     {item.url}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 shrink-0 flex-wrap justify-between md:justify-end">
+                <div className="flex items-center gap-4 sm:gap-6 shrink-0 flex-wrap justify-between md:justify-end w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-border/50">
                   <div className="flex items-center gap-3">
                     <div className="text-right">
                       <div className="font-mono text-xs font-semibold text-ink">

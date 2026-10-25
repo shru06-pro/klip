@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function Hero() {
   return (
-    <section className="relative pt-8 sm:pt-12 pb-6 px-4 max-w-4xl mx-auto text-center">
+    <section className="relative pt-6 sm:pt-12 pb-4 sm:pb-6 px-4 max-w-4xl mx-auto text-center">
       {/* Decorative Sparkles */}
       <div
         aria-hidden="true"
@@ -32,12 +32,12 @@ export default function Hero() {
       </div>
 
       {/* Huge Serif Signature Headline */}
-      <h1 className="font-serif text-[clamp(2.75rem,7vw,5.25rem)] leading-[0.96] tracking-[-0.025em] text-ink font-normal mb-5 max-w-3xl mx-auto">
+      <h1 className="font-serif text-[clamp(2.15rem,6.5vw,5.25rem)] leading-[1.04] sm:leading-[0.96] tracking-[-0.025em] text-ink font-normal mb-4 sm:mb-5 max-w-3xl mx-auto">
         Make long links <span className="italic text-accent">tiny</span> and shareable
         <span className="text-accent">.</span>
       </h1>
 
-      <p className="font-sans text-base sm:text-lg text-muted max-w-xl mx-auto leading-relaxed">
+      <p className="font-sans text-sm sm:text-base md:text-lg text-muted max-w-xl mx-auto leading-relaxed px-2">
         The neo-minimalist link shortener crafted for independent creators, studios, and editorial curators. Clean, edge-routed, zero noise.
       </p>
     </section>

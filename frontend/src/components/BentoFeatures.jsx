@@ -17,9 +17,9 @@ export default function BentoFeatures() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* Bento Card 1 */}
-        <div className="bg-white rounded-2xl p-6 border border-border shadow-[0_4px_20px_-4px_rgba(39,39,42,0.04)] flex flex-col justify-between hover:-translate-y-0.5 transition-all">
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-border shadow-[0_4px_20px_-4px_rgba(39,39,42,0.04)] flex flex-col justify-between hover:-translate-y-0.5 transition-all">
           <div className="space-y-3">
             <div className="w-10 h-10 rounded-full bg-accent-tint text-accent flex items-center justify-center">
               <span className="material-symbols-outlined text-xl">alt_route</span>
@@ -45,7 +45,7 @@ export default function BentoFeatures() {
         </div>
 
         {/* Bento Card 2 */}
-        <div className="bg-white rounded-2xl p-6 border border-border shadow-[0_4px_20px_-4px_rgba(39,39,42,0.04)] flex flex-col justify-between hover:-translate-y-0.5 transition-all">
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-border shadow-[0_4px_20px_-4px_rgba(39,39,42,0.04)] flex flex-col justify-between hover:-translate-y-0.5 transition-all">
           <div className="space-y-3">
             <div className="w-10 h-10 rounded-full bg-accent-tint text-accent flex items-center justify-center">
               <span className="material-symbols-outlined text-xl">tune</span>
@@ -72,7 +72,7 @@ export default function BentoFeatures() {
 
         {/* Bento Card 3 */}
         <div
-          className="bg-white rounded-2xl p-6 border border-border shadow-[0_4px_20px_-4px_rgba(39,39,42,0.04)] flex flex-col justify-between hover:-translate-y-0.5 transition-all"
+          className="bg-white rounded-2xl p-5 sm:p-6 border border-border shadow-[0_4px_20px_-4px_rgba(39,39,42,0.04)] flex flex-col justify-between hover:-translate-y-0.5 transition-all sm:col-span-2 lg:col-span-1"
           id="analytics"
         >
           <div className="space-y-3">
