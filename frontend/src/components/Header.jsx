@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 
 const navItems = [
   { id: 'shorten', label: 'Shorten' },
@@ -9,8 +9,39 @@ const navItems = [
 
 export default function Header() {
   const [activeNav, setActiveNav] = useState('shorten')
+  const [pillStyle, setPillStyle] = useState({ left: 4, width: 78, opacity: 1 })
+  const navRefs = useRef({})
+  const containerRef = useRef(null)
   const isManualClick = useRef(false)
   const clickTimeout = useRef(null)
+
+  const updatePill = useCallback((navId = activeNav) => {
+    const el = navRefs.current[navId]
+    if (el) {
+      setPillStyle({
+        left: el.offsetLeft,
+        width: el.offsetWidth,
+        opacity: 1,
+      })
+    }
+  }, [activeNav])
+
+  useLayoutEffect(() => {
+    updatePill(activeNav)
+  }, [activeNav, updatePill])
+
+  useEffect(() => {
+    const handleResize = () => updatePill(activeNav)
+    window.addEventListener('resize', handleResize)
+    if (document.fonts) {
+      document.fonts.ready.then(handleResize)
+    }
+    const timer = setTimeout(handleResize, 50)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(timer)
+    }
+  }, [activeNav, updatePill])
 
   useEffect(() => {
     // Check initial hash on load
@@ -23,28 +54,36 @@ export default function Header() {
       // Do not override user selection while smooth-scrolling from a click
       if (isManualClick.current) return
 
-      const scrollPosition = window.scrollY + 160
+      const scrollY = window.scrollY
+      const scrollPosition = scrollY + 180
 
       // If user is scrolled to the very bottom, activate the lowest section
       const isAtBottom =
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 70
+        window.innerHeight + scrollY >= document.documentElement.scrollHeight - 70
 
       if (isAtBottom) {
         setActiveNav('recent')
         return
       }
 
-      // Track sections in order of their page position
-      const sections = [
-        { id: 'shorten', el: document.getElementById('shorten') },
-        { id: 'engine', el: document.getElementById('engine') },
-        { id: 'analytics', el: document.getElementById('analytics') },
-        { id: 'recent', el: document.getElementById('recent') },
-      ].filter((s) => s.el !== null)
+      // Track sections in order of their absolute document position
+      const sections = ['shorten', 'engine', 'analytics', 'recent']
+        .map((id) => {
+          const el = document.getElementById(id)
+          if (!el) return null
+          const rect = el.getBoundingClientRect()
+          return {
+            id,
+            docTop: rect.top + scrollY,
+          }
+        })
+        .filter(Boolean)
+
+      sections.sort((a, b) => a.docTop - b.docTop)
 
       let currentSection = 'shorten'
       for (const section of sections) {
-        if (scrollPosition >= section.el.offsetTop) {
+        if (scrollPosition >= section.docTop) {
           currentSection = section.id
         }
       }
@@ -52,15 +91,26 @@ export default function Header() {
       setActiveNav(currentSection)
     }
 
+    const handlePopState = () => {
+      const currentHash = window.location.hash.replace('#', '')
+      if (currentHash && navItems.some((n) => n.id === currentHash)) {
+        setActiveNav(currentHash)
+      }
+    }
+
     window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('popstate', handlePopState)
+
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('popstate', handlePopState)
       if (clickTimeout.current) clearTimeout(clickTimeout.current)
     }
   }, [])
 
   const handleNavClick = (id) => {
     setActiveNav(id)
+    updatePill(id)
     isManualClick.current = true
 
     if (clickTimeout.current) clearTimeout(clickTimeout.current)
@@ -111,18 +161,32 @@ export default function Header() {
           </span>
         </a>
 
-        {/* Middle Navigation with dynamic active pill */}
-        <div className="hidden md:flex items-center gap-1.5 p-1 bg-canvas/70 rounded-full border border-border/70 text-sm">
+        {/* Middle Navigation with dynamic sliding circle pill */}
+        <div
+          ref={containerRef}
+          className="relative hidden md:flex items-center gap-1.5 p-1 bg-canvas/70 rounded-full border border-border/70 text-sm"
+        >
+          {/* Animated sliding pill indicator */}
+          <span
+            className="absolute top-1 bottom-1 bg-white rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] pointer-events-none"
+            style={{
+              left: `${pillStyle.left}px`,
+              width: `${pillStyle.width}px`,
+              opacity: pillStyle.opacity,
+            }}
+          />
+
           {navItems.map((item) => {
             const isActive = activeNav === item.id
             return (
               <button
                 key={item.id}
+                ref={(el) => (navRefs.current[item.id] = el)}
                 type="button"
                 onClick={() => handleNavClick(item.id)}
-                className={`px-4 py-1.5 rounded-full font-medium transition-all duration-200 cursor-pointer ${
+                className={`relative z-10 px-4 py-1.5 rounded-full font-medium transition-colors duration-200 cursor-pointer select-none ${
                   isActive
-                    ? 'bg-white text-ink shadow-[0_2px_8px_rgba(0,0,0,0.06)]'
+                    ? 'text-ink font-semibold'
                     : 'text-muted hover:text-ink'
                 }`}
               >
