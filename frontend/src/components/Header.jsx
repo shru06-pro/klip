@@ -3,9 +3,8 @@ import logoIcon from '../images/logo-icon.png'
 
 const navItems = [
   { id: 'shorten', label: 'Shorten' },
-  { id: 'recent', label: 'Recent Links' },
   { id: 'engine', label: 'Engine' },
-  { id: 'analytics', label: 'Analytics' },
+  { id: 'recent', label: 'Recent Links' },
 ]
 
 export default function Header() {
@@ -68,13 +67,13 @@ export default function Header() {
       }
 
       // Track sections in order of their absolute document position
-      const sections = ['shorten', 'engine', 'analytics', 'recent']
-        .map((id) => {
-          const el = document.getElementById(id)
+      const sections = navItems
+        .map((item) => {
+          const el = document.getElementById(item.id)
           if (!el) return null
           const rect = el.getBoundingClientRect()
           return {
-            id,
+            id: item.id,
             docTop: rect.top + scrollY,
           }
         })
