@@ -84,54 +84,53 @@ export default function Shortener({ onUrlCreated }) {
   }
 
   return (
-    <section className="max-w-3xl mx-auto px-4 my-6" id="shorten">
+    <section className="max-w-3xl mx-auto px-4 my-4 sm:my-6" id="shorten">
       <form onSubmit={handleSubmit}>
-        <div className="bg-white rounded-2xl sm:rounded-full border border-border shadow-[0_12px_40px_-10px_rgba(39,39,42,0.1)] p-2 pl-3 sm:pl-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 transition-all focus-within:ring-2 focus-within:ring-accent/30 focus-within:border-accent">
-          <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0 py-1 sm:py-0">
-            <span className="material-symbols-outlined text-muted text-lg sm:text-xl shrink-0">link</span>
-            <input
-              id="longUrlInput"
-              className="w-full bg-transparent border-0 focus:ring-0 text-ink text-sm sm:text-base placeholder-muted/60 p-0 font-normal truncate outline-none"
-              placeholder="Paste raw URL here... (e.g. https://...)"
-              type="url"
-              value={input}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
+        {/* Unified Continuous Pill Capsule */}
+        <div className="bg-white rounded-full border border-border shadow-[0_10px_35px_-10px_rgba(39,39,42,0.08)] p-1.5 sm:p-2 pl-3.5 sm:pl-6 flex items-center gap-2 transition-all focus-within:ring-2 focus-within:ring-accent/30 focus-within:border-accent">
+          <span className="material-symbols-outlined text-muted text-lg sm:text-xl shrink-0">link</span>
+          <input
+            id="longUrlInput"
+            className="w-full bg-transparent border-0 focus:ring-0 text-ink text-sm sm:text-base placeholder-muted/60 p-0 font-normal truncate outline-none min-w-0"
+            placeholder="Paste raw URL here..."
+            type="url"
+            value={input}
+            onChange={handleInputChange}
+            required
+          />
 
-          <div className="flex items-center justify-end gap-2 shrink-0">
-            {/* Quick paste trigger */}
+          {/* Quick paste trigger */}
+          {!input && (
             <button
               id="pasteBtn"
               type="button"
               onClick={handlePaste}
-              className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-full text-xs font-mono text-muted hover:text-ink hover:bg-canvas transition-colors cursor-pointer"
+              className="hidden xs:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-mono text-muted hover:text-ink hover:bg-canvas transition-colors cursor-pointer shrink-0"
               title="Paste from clipboard"
             >
               <span className="material-symbols-outlined text-sm">content_paste</span>
-              <span className="hidden sm:inline">⌘V</span>
+              <span className="hidden sm:inline">Paste</span>
             </button>
+          )}
 
-            {/* Submit Button */}
-            <button
-              id="klipActionBtn"
-              type="submit"
-              disabled={loading}
-              className="w-full sm:w-auto bg-ink text-white hover:bg-[#3F3F46] rounded-full px-5 sm:px-6 py-2.5 sm:py-3 font-medium text-sm flex items-center justify-center gap-2 transition hover:-translate-y-0.5 active:translate-y-0 shadow-sm shrink-0 cursor-pointer disabled:opacity-70"
-            >
-              {loading ? (
-                <PulseLoader color="white" size={6} aria-label="Loading" />
-              ) : (
-                <>
-                  <span>Klip It</span>
-                  <span className="material-symbols-outlined text-base text-accent-soft">
-                    arrow_forward
-                  </span>
-                </>
-              )}
-            </button>
-          </div>
+          {/* Submit Button */}
+          <button
+            id="klipActionBtn"
+            type="submit"
+            disabled={loading}
+            className="bg-ink text-white hover:bg-[#3F3F46] rounded-full px-4 sm:px-6 py-2.5 sm:py-3 font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition hover:-translate-y-0.5 active:translate-y-0 shadow-sm shrink-0 cursor-pointer disabled:opacity-70 whitespace-nowrap"
+          >
+            {loading ? (
+              <PulseLoader color="white" size={5} aria-label="Loading" />
+            ) : (
+              <>
+                <span>Klip It</span>
+                <span className="material-symbols-outlined text-sm sm:text-base text-accent-soft">
+                  arrow_forward
+                </span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Error message indicator */}
@@ -144,30 +143,24 @@ export default function Shortener({ onUrlCreated }) {
         )}
 
         {/* Domain & Custom Slug Sub-bar */}
-        <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-1 sm:px-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-xs uppercase tracking-wider text-muted">Host:</span>
-            {/* Read-only real host display */}
-            <div className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full bg-white border border-border text-xs font-mono text-ink shadow-xs">
-              <span className="text-accent font-medium">{hostPrefix}</span>
-            </div>
-
-            <div className="inline-flex items-center bg-white border border-border rounded-full px-2.5 sm:px-3 py-1 gap-1 text-xs font-mono max-w-full">
-              <span className="text-muted shrink-0">custom slug:</span>
-              <input
-                id="aliasInput"
-                type="text"
-                placeholder="optional"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className="bg-transparent border-0 p-0 text-ink text-xs font-mono focus:ring-0 w-20 sm:w-24 outline-none"
-              />
-              {slug.trim() && <span className="w-1.5 h-1.5 rounded-full bg-accent ml-0.5 shrink-0"></span>}
-            </div>
+        <div className="mt-2.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-1 sm:px-2">
+          {/* Unified Link Prefix + Slug Input */}
+          <div className="flex items-center gap-1.5 bg-white border border-border/80 rounded-full px-3 py-1.5 shadow-2xs text-xs font-mono">
+            <span className="text-muted text-[11px] font-sans font-medium shrink-0">Link:</span>
+            <span className="text-accent font-medium shrink-0 truncate max-w-[130px] sm:max-w-none">{hostPrefix}</span>
+            <input
+              id="aliasInput"
+              type="text"
+              placeholder="custom-slug"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              className="bg-transparent border-0 p-0 text-ink text-xs font-mono focus:ring-0 flex-1 sm:w-28 outline-none placeholder:text-muted/40"
+            />
+            {slug.trim() && <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0"></span>}
           </div>
 
-          {/* Honest Toggles */}
-          <div className="flex items-center gap-3 text-xs text-muted font-mono pt-0.5 sm:pt-0">
+          {/* Option Toggles */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 text-muted text-[11px] font-mono px-2 sm:px-0">
             <label className="flex items-center gap-1.5 cursor-pointer hover:text-ink select-none" title="Link expires automatically after 30 days">
               <input
                 type="checkbox"

@@ -24,6 +24,9 @@ module.exports = {
           border: "rgba(39, 39, 42, 0.08)"
         }
       },
+      screens: {
+        xs: '475px',
+      },
       fontFamily: {
         serif: ['"Instrument Serif"', '"Editorial New"', "serif"],
         sans: ['"DM Sans"', "sans-serif"],

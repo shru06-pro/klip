@@ -170,7 +170,7 @@ export default function Header() {
             <img
               src={logoIcon}
               alt="Klip"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain p-0.5"
             />
           </div>
           <span className="font-serif text-xl sm:text-2xl tracking-tight text-ink font-semibold">
@@ -220,25 +220,25 @@ export default function Header() {
               scrollToShorten()
               setMobileMenuOpen(false)
             }}
-            className="inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 rounded-full bg-accent-tint text-accent hover:bg-accent hover:text-white transition-all text-xs font-mono font-medium border border-accent/20 cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent-tint text-accent hover:bg-accent hover:text-white transition-all text-xs font-mono font-medium border border-accent/20 cursor-pointer"
             type="button"
           >
             <span>New Link</span>
             <span className="text-xs">+</span>
           </button>
 
-          <div className="hidden xs:flex w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden border border-border ring-2 ring-white bg-accent-tint items-center justify-center shrink-0">
-            <span className="font-serif text-xs sm:text-sm font-semibold text-accent">S</span>
+          <div className="hidden md:flex w-8 h-8 rounded-full overflow-hidden border border-border ring-2 ring-white bg-accent-tint items-center justify-center shrink-0">
+            <span className="font-serif text-sm font-semibold text-accent">S</span>
           </div>
 
           {/* Mobile menu toggle button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden w-8 h-8 rounded-full bg-canvas border border-border flex items-center justify-center text-ink hover:bg-accent-tint hover:text-accent transition-colors cursor-pointer shrink-0"
+            className="md:hidden w-9 h-9 rounded-full bg-canvas/80 border border-border flex items-center justify-center text-ink hover:bg-accent-tint hover:text-accent transition-colors cursor-pointer shrink-0"
             aria-label="Toggle navigation menu"
           >
-            <span className="material-symbols-outlined text-base">
+            <span className="material-symbols-outlined text-lg">
               {mobileMenuOpen ? 'close' : 'menu'}
             </span>
           </button>
@@ -247,7 +247,7 @@ export default function Header() {
 
       {/* Mobile dropdown menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden max-w-5xl mx-auto mt-2 p-2 bg-white/95 backdrop-blur-md rounded-2xl border border-border shadow-[0_12px_30px_rgba(39,39,42,0.1)] flex flex-col gap-1 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="md:hidden max-w-5xl mx-auto mt-2 p-2.5 bg-white/95 backdrop-blur-md rounded-2xl border border-border shadow-[0_14px_35px_rgba(39,39,42,0.12)] flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
           {navItems.map((item) => {
             const isActive = activeNav === item.id
             return (
@@ -271,6 +271,19 @@ export default function Header() {
               </button>
             )
           })}
+          <div className="pt-2 border-t border-border/60">
+            <button
+              type="button"
+              onClick={() => {
+                scrollToShorten()
+                setMobileMenuOpen(false)
+              }}
+              className="w-full text-center px-4 py-2.5 rounded-xl bg-ink text-white font-medium text-xs font-mono flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <span>Create New Link</span>
+              <span className="text-accent-soft">+</span>
+            </button>
+          </div>
         </div>
       )}
     </header>

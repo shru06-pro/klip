@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function Hero() {
   return (
-    <section className="relative pt-6 sm:pt-12 pb-4 sm:pb-6 px-4 max-w-4xl mx-auto text-center">
+    <section className="relative pt-4 sm:pt-10 pb-2 sm:pb-6 px-4 max-w-4xl mx-auto text-center">
       {/* Decorative Sparkles */}
       <div
         aria-hidden="true"
@@ -22,22 +22,13 @@ export default function Hero() {
         </svg>
       </div>
 
-      <div
-        aria-hidden="true"
-        className="absolute bottom-2 left-1/4 text-accent-soft/80 animate-twinkle-2 hidden md:block pointer-events-none"
-      >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 0L14 10L24 12L14 14L12 24L10 14L0 12L10 10L12 0Z"></path>
-        </svg>
-      </div>
-
       {/* Huge Serif Signature Headline */}
-      <h1 className="font-serif text-[clamp(2.15rem,6.5vw,5.25rem)] leading-[1.04] sm:leading-[0.96] tracking-[-0.025em] text-ink font-normal mb-4 sm:mb-5 max-w-3xl mx-auto">
+      <h1 className="font-serif text-[clamp(2rem,6.8vw,5.25rem)] leading-[1.02] sm:leading-[0.96] tracking-tight text-ink font-normal mb-3 sm:mb-5 max-w-3xl mx-auto">
         Make long links <span className="italic text-accent">tiny</span> and shareable
         <span className="text-accent">.</span>
       </h1>
 
-      <p className="font-sans text-sm sm:text-base md:text-lg text-muted max-w-xl mx-auto leading-relaxed px-2">
+      <p className="font-sans text-xs sm:text-base md:text-lg text-muted max-w-md sm:max-w-xl mx-auto leading-relaxed px-1">
         The neo-minimalist link shortener crafted for independent creators, studios, and editorial curators. Clean, edge-routed, zero noise.
       </p>
     </section>
