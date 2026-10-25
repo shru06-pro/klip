@@ -12,6 +12,21 @@ const createLimiter = rateLimit({
   message: { message: 'Too many link creation requests from this IP. Please try again after 15 minutes.' },
 })
 
+// Welcome / API Status endpoint
+router.get('/', (req, res) => {
+  res.status(200).json({
+    name: 'Klip. URL Shortener Backend API',
+    status: 'online',
+    version: '2.4.0',
+    health: '/health',
+    endpoints: {
+      health: 'GET /health',
+      shorten: 'POST /api/shorten',
+      stats: 'GET /api/urls/:code',
+    },
+  })
+})
+
 // Health endpoint
 router.get('/health', (req, res) => {
   res.status(200).json({
