@@ -1,4 +1,5 @@
 import React from 'react'
+import logoIcon from '../images/logo-icon.png'
 
 export default function Footer() {
   return (
@@ -6,7 +7,7 @@ export default function Footer() {
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg overflow-hidden bg-white shadow-xs ring-1 ring-black/5 flex items-center justify-center">
-            <img src="/logo-icon.png" alt="Klip" className="w-full h-full object-cover" />
+            <img src={logoIcon} alt="Klip" className="w-full h-full object-cover" />
           </div>
           <span className="font-serif text-xl tracking-tight text-ink font-semibold">
             Klip<span className="text-accent">.</span>

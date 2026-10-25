@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
+import logoIcon from '../images/logo-icon.png'
 
 const navItems = [
   { id: 'shorten', label: 'Shorten' },
@@ -155,7 +156,7 @@ export default function Header() {
         >
           <div className="relative w-9 h-9 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center transition-transform group-hover:scale-105">
             <img
-              src="/logo-icon.png"
+              src={logoIcon}
               alt="Klip"
               className="w-full h-full object-cover"
             />
