@@ -100,34 +100,38 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_urls_short_code ON urls(short_code);
    - Create a new project on [Supabase](https://supabase.com).
    - Go to **Project Settings > Database** and copy the **URI** connection string.
 
-### B. Deploy the Backend (Render or Railway)
+### B. Deploy the Backend (Render)
 
-1. **Render**:
+You can deploy the backend using **Render Blueprints (automatic)** or **Manual Web Service**:
+
+1. **Option 1: One-Click Render Blueprint (Recommended)**:
+   - In Render Dashboard, click **New + > Blueprint**.
+   - Select your `klipIT` repository.
+   - Render automatically parses [`render.yaml`](file:///d:/projects/url%20shortner/render.yaml) and configures the root directory, build command, health check (`/health`), and environment template!
+   - Fill in `BASE_URL` (your frontend domain, e.g. `https://your-app.vercel.app`), `DATABASE_URL` (Neon / Supabase), and `CLIENT_ORIGIN`.
+
+2. **Option 2: Manual Web Service**:
    - Create a new **Web Service** pointing to your repository.
    - Set **Root Directory** to `backend`.
    - Set **Build Command** to `npm install`.
    - Set **Start Command** to `npm start`.
+   - Set **Health Check Path** to `/health`.
    - Add Environment Variables:
-     - `PORT`: `5000` (or Render's default `$PORT`)
-     - `BASE_URL`: Your public domain (e.g. `https://your-frontend.vercel.app` or custom domain)
-     - `DATABASE_URL`: Your Neon / Supabase connection string
-     - `CLIENT_ORIGIN`: Your frontend URL (e.g. `https://your-frontend.vercel.app`)
+     - `PORT`: `10000` (or leave default `$PORT`)
+     - `BASE_URL`: Your public domain (e.g. `https://your-app.vercel.app`)
+     - `DATABASE_URL`: Your Neon / Supabase connection string *(optional, falls back to embedded PostgreSQL)*
+     - `CLIENT_ORIGIN`: Your frontend URL (e.g. `https://your-app.vercel.app` or `*`)
 
-2. **Railway**:
-   - Deploy from GitHub repo and set root directory to `/backend`.
-   - Add the environment variables (`BASE_URL`, `DATABASE_URL`, `PORT`, `CLIENT_ORIGIN`).
+### C. Deploy the Frontend (Vercel)
 
-### C. Deploy the Frontend (Vercel or Netlify)
+The repository includes [`vercel.json`](file:///d:/projects/url%20shortner/vercel.json) and [`frontend/vercel.json`](file:///d:/projects/url%20shortner/frontend/vercel.json) pre-configured with SPA rewrite rules for short link redirection:
 
-1. **Vercel**:
-   - Import your repository in [Vercel](https://vercel.com).
-   - Set **Root Directory** to `frontend`.
-   - Framework preset: `Create React App`.
-   - Add Environment Variable:
-     - `REACT_APP_API_URL`: Your deployed backend URL (e.g. `https://your-backend.onrender.com`).
-2. **Netlify**:
-   - Import repo, set base directory to `frontend`, build command to `npm run build`, and publish directory to `build`.
-   - Set `REACT_APP_API_URL` in **Site Configuration > Environment Variables**.
+1. Import your repository in [Vercel](https://vercel.com).
+2. Set **Root Directory** to `frontend` (or leave as root; both are supported).
+3. Framework preset: `Create React App`.
+4. Add Environment Variable:
+   - `REACT_APP_API_URL`: Your deployed Render backend URL (e.g. `https://klip-backend.onrender.com`).
+5. Click **Deploy**. Vercel will build the production bundle and route all short links seamlessly.
 
 ---
 

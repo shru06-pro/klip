@@ -5,20 +5,18 @@ const helmet = require('helmet')
 const { initDB } = require('./db')
 const indexRouter = require('./routes/index')
 
-// 1. Fail fast on missing required environment variables
-const requiredEnvVars = ['BASE_URL', 'DATABASE_URL', 'PORT']
-const missingEnv = requiredEnvVars.filter((name) => !process.env[name] || !process.env[name].trim())
-if (missingEnv.length > 0) {
-  console.error(`\n======================================================`)
-  console.error(`FATAL: Missing required environment variable(s): ${missingEnv.join(', ')}`)
-  console.error(`Please define them in your server .env file or environment.`)
-  console.error(`======================================================\n`)
-  process.exit(1)
-}
+// 1. Resolve environment variables with intelligent production defaults
+const PORT = parseInt(process.env.PORT, 10) || 5000
+const BASE_URL = (process.env.BASE_URL || `http://localhost:${PORT}`).trim().replace(/\/+$/, '')
+const rawOrigin = (process.env.FRONTEND_ORIGIN || process.env.CLIENT_ORIGIN || process.env.BASE_URL || '*').trim()
+const allowedOrigins = rawOrigin.split(',').map((o) => o.trim().replace(/\/+$/, ''))
 
-const PORT = parseInt(process.env.PORT, 10)
-const BASE_URL = process.env.BASE_URL.trim()
-const CLIENT_ORIGIN = (process.env.FRONTEND_ORIGIN || process.env.CLIENT_ORIGIN || process.env.BASE_URL).trim()
+if (!process.env.BASE_URL && process.env.NODE_ENV === 'production') {
+  console.warn('WARNING: BASE_URL is not set. Short links will default to http://localhost:' + PORT)
+}
+if (!process.env.DATABASE_URL) {
+  console.log('NOTICE: DATABASE_URL not set. Running with embedded persistent PostgreSQL engine.')
+}
 
 const app = express()
 
@@ -30,14 +28,19 @@ app.use(
   })
 )
 
-// 3. Strict CORS configured to allowed client origin
-const allowedOrigins = CLIENT_ORIGIN.split(',').map((o) => o.trim())
+// 3. Robust CORS supporting multiple origins and wildcard subdomains
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, or same-origin)
       if (!origin) return callback(null, true)
-      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      const cleanOrigin = origin.replace(/\/+$/, '')
+      const isAllowed = allowedOrigins.some((allowed) => {
+        if (allowed === '*' || allowed === cleanOrigin) return true
+        if (allowed.startsWith('*.') && cleanOrigin.endsWith(allowed.slice(1))) return true
+        return false
+      })
+      if (isAllowed) {
         return callback(null, true)
       }
       return callback(new Error(`CORS policy does not allow access from origin ${origin}`), false)
