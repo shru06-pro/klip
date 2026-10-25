@@ -4,11 +4,13 @@ export default function Footer() {
   return (
     <footer className="w-full bg-white border-t border-border py-8 px-4">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-accent text-white flex items-center justify-center font-serif text-xs font-bold">
-            K
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg overflow-hidden bg-white shadow-xs ring-1 ring-black/5 flex items-center justify-center">
+            <img src="/logo-icon.png" alt="Klip" className="w-full h-full object-cover" />
           </div>
-          <span className="font-script text-xl font-bold text-ink">Klip.</span>
+          <span className="font-serif text-xl tracking-tight text-ink font-semibold">
+            Klip<span className="text-accent">.</span>
+          </span>
           <span className="font-mono text-xs text-muted ml-2">v2.4.0 Engine</span>
         </div>
 

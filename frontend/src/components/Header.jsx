@@ -144,19 +144,23 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 pt-5 px-4 sm:px-6">
       <nav className="max-w-5xl mx-auto rounded-full px-5 sm:px-6 py-3 bg-white/85 backdrop-blur-md border border-border shadow-[0_10px_35px_-10px_rgba(39,39,42,0.08)] flex items-center justify-between gap-4 transition-all">
-        {/* Logo mark + handwritten brand */}
+        {/* Brand Monogram Lockup */}
         <a
-          className="flex items-center gap-2.5 group cursor-pointer"
+          className="flex items-center gap-3 group cursor-pointer transition-opacity hover:opacity-85"
           href="#shorten"
           onClick={(e) => {
             e.preventDefault()
             scrollToShorten()
           }}
         >
-          <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-serif text-lg font-bold shadow-sm transition-transform group-hover:scale-105">
-            K
+          <div className="relative w-9 h-9 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center transition-transform group-hover:scale-105">
+            <img
+              src="/logo-icon.png"
+              alt="Klip"
+              className="w-full h-full object-cover"
+            />
           </div>
-          <span className="font-script text-2xl font-bold text-ink tracking-tight -rotate-2 group-hover:rotate-0 transition-transform">
+          <span className="font-serif text-2xl tracking-tight text-ink font-semibold">
             Klip<span className="text-accent">.</span>
           </span>
         </a>

@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --klip-bg: #F8F6F2;
+  --klip-ink: #27272A;
+  --klip-lavender: #8478A8;
+  --klip-border: rgba(39, 39, 42, 0.08);
+}
+
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
   50% { transform: translateY(-7px) rotate(6deg) scale(1.08); }

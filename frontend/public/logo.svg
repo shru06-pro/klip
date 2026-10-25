@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Rounded Card Base with ambient warmth -->
+  <rect width="512" height="512" rx="112" fill="#F8F6F2" />
+  <rect x="1.5" y="1.5" width="509" height="509" rx="110.5" stroke="#E7E4DE" stroke-width="3" />
+  
+  <!-- Interlocking Paperclip (Outer Loop & Inner Loop) in Charcoal (#27272A) -->
+  <g transform="translate(142, 110)">
+    <!-- Outer paperclip wire -->
+    <path d="M72 40 C72 17.9 54.1 0 32 0 C9.9 0 -8 17.9 -8 40 L-8 210 C-8 248.7 23.3 280 62 280 C100.7 280 132 248.7 132 210 L132 70 C132 41.3 108.7 18 80 18 C51.3 18 28 41.3 28 70 L28 190 C28 201 37 210 48 210 C59 210 68 201 68 190 L68 76" 
+          stroke="#27272A" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    
+    <!-- Editorial Serif K Arms in Muted Lavender (#8478A8) & Deep Ink (#27272A) -->
+    <!-- Diagonal Upper Arm with serif terminal -->
+    <path d="M78 140 L165 42 C168 38 165 32 158 32 L136 32 C132 32 128 34 125 38 L54 120" 
+          fill="#8478A8" stroke="#27272A" stroke-width="4" stroke-linejoin="round" />
+    
+    <!-- Diagonal Lower Leg with bracketed serif foot -->
+    <path d="M70 134 L162 254 C166 259 170 262 176 262 L198 262 C204 262 207 256 202 250 L115 134" 
+          fill="#27272A" />
+    <!-- Serif foot accent -->
+    <rect x="156" y="258" width="46" height="7" rx="3.5" fill="#27272A" />
+  </g>
+  
+  <!-- Brand Wordmark 'Klip.' at bottom -->
+  <text x="256" y="440" font-family="'Instrument Serif', serif" font-size="74" font-weight="600" fill="#27272A" text-anchor="middle" letter-spacing="-1">
+    Klip<tspan fill="#8478A8">.</tspan>
+  </text>
+</svg>
